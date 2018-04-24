@@ -1,0 +1,28 @@
+{
+  "name": "sbot-gossip",
+  "version": "1.0.0",
+  "description": "improved gossip manager for sbot",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape \"test/*.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pietgeursen/sbot-gossip.git"
+  },
+  "keywords": [
+    "ssbc",
+    "scuttlebutt",
+    "scuttlebot",
+    "gossip",
+    "scheduler",
+    "manager",
+    "connection"
+  ],
+  "author": "pietgeursen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pietgeursen/sbot-gossip/issues"
+  },
+  "homepage": "https://github.com/pietgeursen/sbot-gossip#readme"
+}
