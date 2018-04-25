@@ -17,6 +17,10 @@ Features:
 
 This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
 
+Still to think about:
+
+How to manage multi protocols? How does rtc fit in here?
+
 ## Usage
 
 ## API
@@ -93,6 +97,27 @@ setMaxConnections(max)
 ```
 where `max` is an integer
 
+### Set scheduler connection time before disconnecting
+
+```js
+  setConnectionLifetime(time)
+```
+
+### Remote peer did connect
+
+```js
+  remotePeerDidConnect(peerId)
+```
+
+where `peerId` is the public key of the peer that connected.
+
+### Connected peers
+
+```js
+  peers
+```
+
+An observable of the currently connected peers.
 
 ### Connection errors
 
