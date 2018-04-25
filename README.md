@@ -29,7 +29,7 @@ How to manage multi protocols? How does rtc fit in here?
 ### Initialisation
 
 ```js
-  init(opts)
+init(opts)
 ```
 
 where `opts` is an object with keys:
@@ -42,7 +42,7 @@ Starts an initial sync with one (optionally provided) peer.
 When initial sync is happening we don't want to be trying to connecting to multiple peers.
 
 ```js
-  startInitialSync([peer])
+startInitialSync([peer])
 ```
 
 ### Stop initial sync
@@ -50,51 +50,51 @@ When initial sync is happening we don't want to be trying to connecting to multi
 Stops an initial sync, may be resumed with `startInitialSync()`
 
 ```js
-  stopInitialSync()
+stopInitialSync()
 ```
 
 ### Prioritise peer
 
 ```js
-  setPeerPriority(peers)
+setPeerPriority(peers)
 ```
 Where `peers` is an array of objects with shape:
 ```js
-  {
-    address: multiserverAddress 
-    priority: priorities.HIGH
-  }
+{
+  address: multiserverAddress 
+  priority: priorities.HIGH
+}
 ```
 Where priority is an enum of HIGH, MED, LOW, BANNED.
 
 ### Add peers
 
 ```js
-  addPeers(peers)
+addPeers(peers)
 ```
 Where `peers` is an array of objects with shape:
 ```js
-  {
-    address: multiserverAddress 
-  }  
+{
+  address: multiserverAddress 
+}  
 ```
 
 ### Start making connections 
 
 ```js
-  startConnecting()
+startConnecting()
 ```
 
 ### Stop all connections 
 
 ```js
-  stopConnecting()
+stopConnecting()
 ```
 
 ### Set maximum number of connections 
 
 ```js
-  setMaxConnections(max)
+setMaxConnections(max)
 ```
 where `max` is an integer
 
@@ -102,12 +102,12 @@ where `max` is an integer
 
 If a connection is not "long term" it will be disconnected after `time` ms.
 ```js
-  setConnectionLifetime(timeMs)
+setConnectionLifetime(timeMs)
 ```
 ### Remote peer did connect
 
 ```js
-  remotePeerDidConnect(peerId)
+remotePeerDidConnect(peerId)
 ```
 
 where `peerId` is the public key of the peer that connected.
@@ -117,21 +117,21 @@ where `peerId` is the public key of the peer that connected.
 An observable of the peers the manager knows about.
 
 ```js
-  peers
+peers
 ```
 
 ### Connection errors
 
 ```js
-  connectionErrors()
+connectionErrors()
 ```
 A pull stream of errors received from trying to connect to peers. Will emit objects of shape:
 
 ```js
-  {
-    peer: multiServerAddress,
-    error: Error
-  }
+{
+  peer: multiServerAddress,
+  error: Error
+}
 ```
 
 ## Install
