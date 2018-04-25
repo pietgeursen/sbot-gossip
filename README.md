@@ -10,7 +10,7 @@ Features:
 - Start and stop all connections. 
 - Manager is 'off' by default, will only start trying to connect to peers when told to.
 - Supports prioritising peers by `HIGH`, `MEDIUM`, `LOW` and `BANNED`.
-- Supports initial sync mode. TBD what this actually does, for now just one peer connection, all scheduling is of other connections is off.
+- Supports initial sync mode. TBD what this actually does, for now just one peer connection, all scheduling of other connections is off.
 - Supports "long term connections" where a peer can be specified to remain connected as long as possible.
 - Supports connecting immediately and permanently to a peer. Useful for debugging. 
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
@@ -27,14 +27,14 @@ This module uses redux as a data store. Hopefully redux is a commonly understood
 init(opts)
 ```
 
-where `opts` has keys:
+where `opts` is an object with keys:
 
 `connectToPeer`: (required) an async function that can be passed a multiserver address to begin an outbound connection to a peer. Will normally be the `sbot.connect` function.
 
 ### Start initial sync
 
 Starts an initial sync with one (optionally provided) peer.
-When initial sync is happening we don't need or want to be trying to connecting to multiple peers.
+When initial sync is happening we don't want to be trying to connecting to multiple peers.
 
 ```js
 startInitialSync([peer])
