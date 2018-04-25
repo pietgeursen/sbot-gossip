@@ -14,9 +14,10 @@ Features:
 - Supports "long term connections" where a peer can be specified to remain connected as long as possible.
 - Supports connecting immediately and permanently to a peer. Useful for debugging. 
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
-This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
 - Provides an observable of peers
 - Provides a hook for `onPrioritise` so other modules can change the prioritisation of peers.
+
+This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
 
 Still to think about:
 
