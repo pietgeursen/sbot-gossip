@@ -14,8 +14,9 @@ Features:
 - Supports "long term connections" where a peer can be specified to remain connected as long as possible.
 - Supports connecting immediately and permanently to a peer. Useful for debugging. 
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
-
 This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
+- Provides an observable of peers
+- Provides a hook for `onPrioritise` so other modules can change the prioritisation of peers.
 
 Still to think about:
 
@@ -28,7 +29,7 @@ How to manage multi protocols? How does rtc fit in here?
 ### Initialisation
 
 ```js
-init(opts)
+  init(opts)
 ```
 
 where `opts` is an object with keys:
@@ -41,7 +42,7 @@ Starts an initial sync with one (optionally provided) peer.
 When initial sync is happening we don't want to be trying to connecting to multiple peers.
 
 ```js
-startInitialSync([peer])
+  startInitialSync([peer])
 ```
 
 ### Stop initial sync
@@ -49,13 +50,13 @@ startInitialSync([peer])
 Stops an initial sync, may be resumed with `startInitialSync()`
 
 ```js
-stopInitialSync()
+  stopInitialSync()
 ```
 
 ### Prioritise peer
 
 ```js
-setPeerPriority(peers)
+  setPeerPriority(peers)
 ```
 Where `peers` is an array of objects with shape:
 ```js
@@ -69,7 +70,7 @@ Where priority is an enum of HIGH, MED, LOW, BANNED.
 ### Add peers
 
 ```js
-addPeers(peers)
+  addPeers(peers)
 ```
 Where `peers` is an array of objects with shape:
 ```js
@@ -81,28 +82,28 @@ Where `peers` is an array of objects with shape:
 ### Start making connections 
 
 ```js
-startConnecting()
+  startConnecting()
 ```
 
 ### Stop all connections 
 
 ```js
-stopConnecting()
+  stopConnecting()
 ```
 
 ### Set maximum number of connections 
 
 ```js
-setMaxConnections(max)
+  setMaxConnections(max)
 ```
 where `max` is an integer
 
-### Set scheduler connection time before disconnecting
+### Set scheduler connection lifetime before disconnecting
 
+If a connection is not "long term" it will be disconnected after `time` ms.
 ```js
-  setConnectionLifetime(time)
+  setConnectionLifetime(timeMs)
 ```
-
 ### Remote peer did connect
 
 ```js
@@ -111,18 +112,18 @@ where `max` is an integer
 
 where `peerId` is the public key of the peer that connected.
 
-### Connected peers
+### Peers
+
+An observable of the peers the manager knows about.
 
 ```js
   peers
 ```
 
-An observable of the currently connected peers.
-
 ### Connection errors
 
 ```js
-connectionErrors()
+  connectionErrors()
 ```
 A pull stream of errors received from trying to connect to peers. Will emit objects of shape:
 
