@@ -151,6 +151,7 @@ $ npm install sbot-gossip
 This project is funded by a grant from [staltz](https://github.com/staltz) for the [mmmmm-mobile](https://github.com/staltz/mmmmm-mobile) project.
 
 Thanks to [dominctarr](https://github.com/dominictarr) for a brain dump and some guidance on how to make this useful in the "normal" sbot context.
+Thanks to [mixmix](https://github.com/mixmix) for the engaging with the readme and giving feedback.
 
 ## See Also
 
