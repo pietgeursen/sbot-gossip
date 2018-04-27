@@ -3,8 +3,10 @@
 > improved gossip manager for sbot
 
 Module that manages making connections to other sbots (peers).
+This is a replacement for the scuttlebot gossip plugin that's built into scuttlebot.
 
-The goal is to provide more control over when connections happen.
+The goal is to provide more control over the manager with code that's easier to understand and extend.
+
 Features:
 - Set maximum number of peers to connect to.
 - Start and stop all connections. 
@@ -30,72 +32,81 @@ How to manage multi protocols? How does rtc fit in here?
 ### Initialisation
 
 ```js
-init(opts)
+var Manager = require('sbot-connection-manager')
+var manager = Manager(opts)
 ```
 
 where `opts` is an object with keys:
 
 `connectToPeer`: (required) an async function that can be passed a multiserver address to begin an outbound connection to a peer. Will normally be the `sbot.connect` function.
 
-### Start initial sync
+### Initial sync
 
-Starts an initial sync with one (optionally provided) peer.
+Starts or stops an initial sync with one (optionally provided) peer.
 When initial sync is happening we don't want to be trying to connecting to multiple peers.
 
 ```js
-startInitialSync([peer])
+manager.initialSync.start([peer])
 ```
 
-### Stop initial sync
+where `peer` is optional.
 
-Stops an initial sync, may be resumed with `startInitialSync()`
+or
 
 ```js
-stopInitialSync()
+manager.initialSync.stop()
 ```
-
-### Prioritise peer
-
-```js
-setPeerPriority(peers)
-```
-Where `peers` is an array of objects with shape:
-```js
-{
-  address: multiserverAddress 
-  priority: priorities.HIGH
-}
-```
-Where priority is an enum of HIGH, MED, LOW, BANNED.
 
 ### Add peers
 
 ```js
-addPeers(peers)
+manager.peers.add(peers)
 ```
 Where `peers` is an array of objects with shape:
 ```js
 {
   address: multiserverAddress 
 }  
+
 ```
+### Peers observable
+
+An observable of the peers the manager knows about.
+
+```js
+manager.peers // tbd
+```
+
+### Prioritise peers
+
+```js
+manager.peers.setPriority(peers)
+```
+Where `peers` is an array of objects with shape:
+```js
+{
+  address: multiserverAddress 
+  priority: priority.HIGH
+}
+```
+And priority is an enum of HIGH, MED, LOW, BANNED.
 
 ### Start making connections 
 
 ```js
-startConnecting()
+manager.connections.start()
 ```
 
 ### Stop all connections 
 
 ```js
-stopConnecting()
+manager.connections.stop()
 ```
 
 ### Set maximum number of connections 
 
 ```js
-setMaxConnections(max)
+manager.connections.setMax()
 ```
 where `max` is an integer
 
@@ -103,28 +114,18 @@ where `max` is an integer
 
 If a connection is not "long term" it will be disconnected after `time` ms.
 ```js
-setConnectionLifetime(timeMs)
+manager.connections.setLifetime(timeMs)
 ```
 ### Remote peer did connect
 
 ```js
-remotePeerDidConnect(peerId)
-```
-
-where `peerId` is the public key of the peer that connected.
-
-### Peers
-
-An observable of the peers the manager knows about.
-
-```js
-peers
+manager.connections.remotePeerConnected(peerId)
 ```
 
 ### Connection errors
 
 ```js
-connectionErrors()
+manager.connection.errors()
 ```
 A pull stream of errors received from trying to connect to peers. Will emit objects of shape:
 
@@ -134,6 +135,8 @@ A pull stream of errors received from trying to connect to peers. Will emit obje
   error: Error
 }
 ```
+where `peerId` is the public key of the peer that connected.
+
 
 ## Install
 
@@ -145,7 +148,9 @@ $ npm install sbot-gossip
 
 ## Acknowledgments
 
-sbot-gossip was inspired by..
+This project is funded by a grant from [staltz](https://github.com/staltz) for the [mmmmm-mobile](https://github.com/staltz/mmmmm-mobile) project.
+
+Thanks to [dominctarr](https://github.com/dominictarr) for a brain dump and some guidance on how to make this useful in the "normal" sbot context.
 
 ## See Also
 
