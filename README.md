@@ -1,4 +1,4 @@
-# sbot-connection-manager
+#sbot-connection-manager
 
 > improved "gossip" (connection) manager for scuttlebot
 
