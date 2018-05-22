@@ -17,5 +17,7 @@ test('Adds peers', function (t) {
   var action = peersAdded(peers)
   var newState = reducer(initialState, action)
   t.deepEqual(newState.get('peers').toJS(), peers, 'Peers are added')
+  newState = reducer(newState, action)
+  t.deepEqual(newState.get('peers').toJS(), peers, 'Peers are not added twice')
   t.end()
 })

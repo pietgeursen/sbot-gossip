@@ -11,7 +11,7 @@ module.exports = function reducer (state = initialState, action) {
     case PEERS_MAX_NUM_CONNECTIONS_SET:
       return state.set('maxConnectedPeers', action.payload)
     case PEERS_ADDED:
-      return state.updateIn(['peers'], peers => peers.union(Set(action.payload)))
+      return state.updateIn(['peers'], peers => peers.union(action.payload))
     default:
       return state
   }
