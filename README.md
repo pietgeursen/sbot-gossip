@@ -67,13 +67,8 @@ manager.initialSync.stop()
 ```js
 manager.peers.add(peers)
 ```
-Where `peers` is an array of objects with shape:
-```js
-{
-  address: multiserverAddress 
-}  
+Where `peers` is an array of strings of multiserver addresses:
 
-```
 ### Peers observable
 
 An observable of the peers the manager knows about.

@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/pietgeursen/sbot-gossip#readme",
   "dependencies": {
+    "immutable": "^3.8.2",
     "obv": "0.0.1",
     "pull-notify": "^0.1.1",
     "pull-stream": "^3.6.8",
