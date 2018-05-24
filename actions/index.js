@@ -9,7 +9,7 @@ function doSetMaxNumConnections (max) {
   }
 }
 
-// I think we want a thunk that dipatches DID_START straight away, intervalId as payload. Then ticks actions are dispatched from the interval
+// I think we want a thunk that dispatches DID_START straight away, intervalId as payload. Then ticks actions are dispatched from the interval
 const SCHEDULER_DID_START = 'SCHEDULER_DID_START'
 
 function doStartScheduler () {
@@ -27,15 +27,10 @@ const SCHEDULER_DID_STOP = 'SCHEDULER_DID_STOP'
 
 function doStopScheduler () {
   return function ({dispatch, selectSchedulerTimerID, selectPeerTimers, selectConnectedPeers}) {
-    var id = selectSchedulerTimerID()
-    clearInterval(id)
-    var ids = selectPeerTimers()
-    ids.forEach(function (id) {
-      clearInterval(id)
-    })
+    clearInterval(selectSchedulerTimerID())
+    selectPeerTimers().forEach(clearInterval)
 
-    var connectedPeers = selectConnectedPeers()
-    connectedPeers.forEach(doPeerDisconnect)
+    selectConnectedPeers().forEach(doPeerDisconnect)
     dispatch({type: SCHEDULER_DID_STOP})
   }
 }
@@ -100,9 +95,12 @@ const PEER_CONNECTION_ERROR = 'PEER_CONNECTION_ERROR'
 // on connected we'll return a thunk that immediately dispatched connected with timeoutId as payload. Started closing will be dispatched eventually
 function doPeerConnect (peer) {
   return function ({dispatch, peerConnect}) {
-    dispatch({type: PEER_CONNECTION_STARTED, payload: peer })
+    dispatch({ type: PEER_CONNECTION_STARTED, payload: peer })
     peerConnect(function (err) {
-      if (err) { dispatch({type: PEER_CONNECTION_ERROR, payload: err}) } else { dispatch({type: PEER_CONNECTION_CONNECTED, payload: peer}) }
+      if (err) {
+        dispatch({type: PEER_CONNECTION_ERROR, payload: err})
+        dispatch(doPeerDidDisconnect(peer))
+      } else { dispatch({type: PEER_CONNECTION_CONNECTED, payload: peer}) }
     })
   }
 }
@@ -135,8 +133,36 @@ function doInboundPeerConnected (peer) {
 }
 
 module.exports = {
+  SCHEDULER_DID_START,
+  doStartScheduler,
+  SCHEDULER_DID_STOP,
+  doStopScheduler,
+  SCHEDULER_DID_TICK,
+  doSchedulerTick,
+  CONNECTION_LIFETIME_SET,
+  doSetConnectionLifetime,
   MAX_NUM_CONNECTIONS_SET,
   doSetMaxNumConnections,
   PEERS_ADDED,
-  doAddPeers
+  doAddPeers,
+  PEER_PRIORITY_SET,
+  doSetPeerPriority,
+  PEER_CONNECTION_LONGTERM_SET,
+  doSetPeerLongtermConnection,
+  PEER_CONNECTION_STARTED,
+  doPeerConnect,
+  PEER_CONNECTION_CONNECTED,
+  PEER_CONNECTION_ERROR,
+  PEER_CONNECTION_STARTED_CLOSING,
+  doPeerDisconnect,
+  PEER_CONNECTION_CLOSED,
+  PEER_CONNECTED_TO_US,
+  doInboundPeerConnected,
+
+  // NOT actions but priority types
+  PRIORITY_HIGH,
+  PRIORITY_MED,
+  PRIORITY_LOW,
+  PRIORITY_BANNED
+
 }
