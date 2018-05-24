@@ -44,6 +44,7 @@ var manager = Manager(opts)
 where `opts` is an object with keys:
 
 `connectToPeer`: (required) an async function that can be passed a multiserver address to begin an outbound connection to a peer. Will normally be the `sbot.connect` function.
+`disconnectFromPeer`: (required) an async function that can be passed a multiserver address to close a connection to a peer. Will normally be the `sbot.disconnect` function.
 
 ### Initial sync
 

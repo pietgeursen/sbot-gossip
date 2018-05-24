@@ -45,6 +45,15 @@ const initialState = Map({
 //      - a new peer connection starts
 //  Other 2 peers connect successfully. On connect they set timeouts to trigger a disconnect and they also immediately dispatch actions to store their timeoutIDs
 //
+// Dealing with closing rpc connections has 2 cases.
+// 1: when it times out. I think this can be a thunk which calls close eventually and dispatches DISCONNECTED
+// 2: when we want to close all connections immediately.
+//
+// Wait, who are we calling out to when we connect? Whoever that is, it should expose a disconnect(address) function too. Then all this complexity goes away.
+// This can be in the lib folder. You pass is server.connect. It exposes connect and disconnect. Internally it keeps an object like:
+// {
+//    msAddress: closeFn
+// }
 
 module.exports = function reducer (state = initialState, action) {
   switch (action.type) {
