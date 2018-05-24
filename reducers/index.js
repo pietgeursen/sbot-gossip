@@ -1,9 +1,21 @@
-var {Set, Map} = require('immutable')
+var {Map, Record, fromJS, Set} = require('immutable')
+var {MAX_NUM_CONNECTIONS_SET, PEERS_ADDED, PRIORITY_MED} = require('../actions/')
 
-var {MAX_NUM_CONNECTIONS_SET, PEERS_ADDED} = require('../actions/')
-const initialState = Map({
+var DISCONNECTED = 'DISCONNECTED'
+var CONNECTING = 'CONNECTING'
+var CONNECTED = 'DISCONNECTED'
+
+var PeerRecord = Record({
+  priority: PRIORITY_MED,
+  connectionStatus: DISCONNECTED,
+  isPermanant: false,
+  timeoutIDs: [],
+  errors: []
+})
+
+const initialState = fromJS({
   maxConnectedPeers: 2,
-  peers: Set([])
+  peers: {}
 })
 
 // Shit we need to track for a peer:
@@ -60,7 +72,16 @@ module.exports = function reducer (state = initialState, action) {
     case MAX_NUM_CONNECTIONS_SET:
       return state.set('maxConnectedPeers', action.payload)
     case PEERS_ADDED:
-      return state.updateIn(['peers'], peers => peers.union(action.payload))
+      var currentPeers = state.get('peers').keySeq().toSet()
+      var addedPeers = Set(action.payload)
+      var newPeers = addedPeers.subtract(currentPeers)
+
+      return state.update('peers', function (peers) {
+        return newPeers.reduce(function (peers, v, k) {
+          return peers.set(k, PeerRecord())
+        }, peers)
+      })
+
     default:
       return state
   }
