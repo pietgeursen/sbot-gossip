@@ -1,13 +1,31 @@
 var {composeBundlesRaw, debugBundle, createReactorBundle} = require('redux-bundler')
+var Connector = require('./lib/connector')
 
-var actions = require('./actions/')
+var peersBundle = require('./peers/bundle')
+var schedulerBundle = require('./scheduler/bundle')
 
-var bundle = Object.assign({
-  name: 'sbot-connection-manager',
-  reducer: require('./reducers/')
+function App (opts) {
+  if (!opts.connectToPeer) { throw new Error("opts.connectToPeer must be defined. Normally it's the sbot.connect function") }
 
-}, actions)
+  var {connect, disconnect} = Connector(opts.connectToPeer)
 
-var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), bundle)
+  var bundle = {
+    name: 'sbot-connection-manager',
+    getExtraArgs: function () {
+      return {
+        connect,
+        disconnect
+      }
+    }
+  }
 
-var store = createStore()
+  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), bundle, peersBundle, schedulerBundle)
+
+  return createStore()
+}
+
+module.exports = App
+module.exports.PRIORITY_HIGH = 'PRIORITY_HIGH'
+module.exports.PRIORITY_MED = 'PRIORITY_MED'
+module.exports.PRIORITY_LOW = 'PRIORITY_LOW'
+module.exports.PRIORITY_BANNED = 'PRIORITY_BANNED'
