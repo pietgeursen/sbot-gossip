@@ -1,6 +1,9 @@
-var {Map, Record, fromJS, Set} = require('immutable')
-var {PRIORITY_MED}  = require('../')
+'use strict'
+var {Record, fromJS} = require('immutable')
+var {createSelector} = require('redux-bundler');
+var {PRIORITY_MED} = require('../')
 
+//TODO: put somewhere else
 var DISCONNECTED = 'DISCONNECTED'
 var CONNECTING = 'CONNECTING'
 var CONNECTED = 'DISCONNECTED'
@@ -8,8 +11,8 @@ var CONNECTED = 'DISCONNECTED'
 var PeerRecord = Record({
   priority: PRIORITY_MED,
   connectionStatus: DISCONNECTED,
-  isPermanant: false,
-  timeoutIDs: [],
+  lastConnection: null,
+  isLongterm: false,
   errors: []
 })
 
@@ -19,11 +22,16 @@ module.exports = {
   name: 'peers',
   reducer: function (state = initialState, action) {
     switch (action.type) {
-      case PEER_ADDED:
-        var peer = action.payload
+      case PEER_ADDED: {
+        const peer = action.payload
         return state.update(peer, function (peer) {
           return peer || PeerRecord()
         })
+      }
+      case PEER_CONNECTION_LONGTERM_SET: {
+        const {address: peer, isLongterm} = action.payload
+        return state.setIn([peer, 'isLongterm'], isLongterm)
+      }
       default:
         return state
     }
@@ -34,7 +42,23 @@ module.exports = {
   doAddPeer,
   doSetPeerPriority,
   doSetPeerLongtermConnection,
-  doInboundPeerConnected
+  doInboundPeerConnected,
+
+  selectPeers,
+  selectConnectedPeers: createSelector('selectPeers', function (peers) {
+    peers.filter(function (peer) {
+      return peer.connectionStatus === CONNECTED
+    })
+  }),
+  reactPeersThatShouldDisconnect: createSelector('selectConnectedPeers', 'selectAppTime', function (peers, appTime) {
+
+    
+  })
+
+}
+
+function selectPeers (state) {
+  return state.peers
 }
 
 const PEER_ADDED = 'PEER_ADDED'
@@ -47,6 +71,7 @@ const PEER_CONNECTION_CONNECTED = 'PEER_CONNECTION_CONNECTED'
 const PEER_CONNECTION_ERROR = 'PEER_CONNECTION_ERROR'
 const PEER_CONNECTION_STARTED_CLOSING = 'PEER_CONNECTION_STARTED_CLOSING'
 const PEER_CONNECTION_CLOSED = 'PEER_CONNECTION_CLOSED'
+
 function doAddPeer (peer) {
   return {
     type: PEER_ADDED,
@@ -72,6 +97,7 @@ function doSetPeerLongtermConnection (peerAddress, isLongterm) {
 }
 
 // on connected we'll return a thunk that immediately dispatched connected with timeoutId as payload. Started closing will be dispatched eventually
+// OR we use the nice reactor pattern. We dispatch connection time timed out and then write a selector so we only dispatch disconnect if we are still connected
 function doPeerConnect (peer) {
   return function ({dispatch, connect}) {
     dispatch({ type: PEER_CONNECTION_STARTED, payload: peer })

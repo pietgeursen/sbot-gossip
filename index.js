@@ -1,4 +1,4 @@
-var {composeBundlesRaw, debugBundle, createReactorBundle} = require('redux-bundler')
+var {composeBundlesRaw, debugBundle, createReactorBundle, appTimeBundle} = require('redux-bundler')
 var Connector = require('./lib/connector')
 
 var peersBundle = require('./peers/bundle')
@@ -19,7 +19,7 @@ function App (opts) {
     }
   }
 
-  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), bundle, peersBundle, schedulerBundle)
+  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), appTimeBundle, bundle, peersBundle, schedulerBundle)
 
   return createStore()
 }
