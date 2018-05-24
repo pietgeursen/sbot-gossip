@@ -1,12 +1,12 @@
 var test = require('tape')
 
-var {peersMaxConnectionsSet, peersAdded} = require('../../actions/')
+var {doSetMaxNumConnections, doAddPeers} = require('../../actions/')
 var reducer = require('../../reducers/')
 var {initialState} = require('../../reducers/')
 
 test('Set Peers Max', function (t) {
   var expected = 3
-  var action = peersMaxConnectionsSet(expected)
+  var action = doSetMaxNumConnections(expected)
   var newState = reducer(initialState, action)
   t.equal(newState.get('maxConnectedPeers'), expected, 'Peers max is set')
   t.end()
@@ -14,7 +14,7 @@ test('Set Peers Max', function (t) {
 
 test('Adds peers', function (t) {
   var peers = ['123', '456']
-  var action = peersAdded(peers)
+  var action = doAddPeers(peers)
   var newState = reducer(initialState, action)
   t.deepEqual(newState.get('peers').toJS(), peers, 'Peers are added')
   newState = reducer(newState, action)
