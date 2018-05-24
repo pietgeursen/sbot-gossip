@@ -63,12 +63,12 @@ or
 manager.initialSync.stop()
 ```
 
-### Add peers
+### Add peer
 
 ```js
-manager.peers.add(peers)
+manager.peer.add(peer)
 ```
-Where `peers` is an array of strings of multiserver addresses:
+Where `peers` is a string of multiserver address:
 
 ### Peers observable
 

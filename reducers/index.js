@@ -1,5 +1,5 @@
 var {Map, Record, fromJS, Set} = require('immutable')
-var {MAX_NUM_CONNECTIONS_SET, PEERS_ADDED, PRIORITY_MED} = require('../actions/')
+var {MAX_NUM_CONNECTIONS_SET, PEER_ADDED, PRIORITY_MED} = require('../actions/')
 
 var DISCONNECTED = 'DISCONNECTED'
 var CONNECTING = 'CONNECTING'
@@ -71,15 +71,10 @@ module.exports = function reducer (state = initialState, action) {
   switch (action.type) {
     case MAX_NUM_CONNECTIONS_SET:
       return state.set('maxConnectedPeers', action.payload)
-    case PEERS_ADDED:
-      var currentPeers = state.get('peers').keySeq().toSet()
-      var addedPeers = Set(action.payload)
-      var newPeers = addedPeers.subtract(currentPeers)
-
-      return state.update('peers', function (peers) {
-        return newPeers.reduce(function (peers, v, k) {
-          return peers.set(k, PeerRecord())
-        }, peers)
+    case PEER_ADDED:
+      var peer = action.payload
+      return state.updateIn(['peers', peer], function (peer) {
+        return peer || PeerRecord()
       })
 
     default:

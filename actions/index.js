@@ -54,12 +54,12 @@ function doSetConnectionLifetime (seconds) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Peers
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const PEERS_ADDED = 'PEERS_ADDED'
+const PEER_ADDED = 'PEER_ADDED'
 
-function doAddPeers (peers) {
+function doAddPeer (peer) {
   return {
-    type: PEERS_ADDED,
-    payload: peers
+    type: PEER_ADDED,
+    payload: peer
   }
 }
 
@@ -143,8 +143,8 @@ module.exports = {
   doSetConnectionLifetime,
   MAX_NUM_CONNECTIONS_SET,
   doSetMaxNumConnections,
-  PEERS_ADDED,
-  doAddPeers,
+  PEER_ADDED,
+  doAddPeer,
   PEER_PRIORITY_SET,
   doSetPeerPriority,
   PEER_CONNECTION_LONGTERM_SET,
