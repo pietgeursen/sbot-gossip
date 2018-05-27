@@ -13,7 +13,7 @@ It just keeps a list of peers and schedules connections to their scuttlebot.
 The goal is to provide more control over the manager with code that's easier to understand and extend.
 
 Features:
-- Set maximum number of peers to connect to.
+- Set maximum number of peers to connect to by protocol.
 - Start and stop all connections. 
 - Manager is 'off' by default, will only start trying to connect to peers when told to.
 - Supports prioritising peers by `HIGH`, `MEDIUM`, `LOW` and `BANNED`.
@@ -63,7 +63,7 @@ Where a route has the shape:
 If a peer discovery module knows that a peer is no longer available it can advise this module it's gone.
 
 ```js
-manager.peer.addRoute(route)
+manager.peer.removeRoute(route)
 ```
 
 Where a route has the shape:
@@ -80,6 +80,12 @@ An observable of the peers the manager knows about.
 
 ```js
 manager.peers // tbd
+```
+
+emits objects of shape:
+
+```
+TBD
 ```
 
 ### Prioritise peers
@@ -177,8 +183,6 @@ or
 ```js
 manager.initialSync.stop()
 ```
-
-
 
 ## Install
 
