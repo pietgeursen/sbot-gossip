@@ -1,4 +1,4 @@
-#sbot-connection-manager
+# sbot-connection-manager
 
 > improved connection (gossip) manager for scuttlebot
 
@@ -23,7 +23,7 @@ Features:
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
 - Provides an observable of peers
 - Provides a hook for `onPrioritise` so other modules can change the prioritisation of peers.
-- Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally that's also advertising on multiple rtc introducers.
+- Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally but also discover it via multiple rtc introducers.
 
 
 This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
