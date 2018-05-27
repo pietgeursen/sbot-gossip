@@ -8,9 +8,14 @@ const SCHEDULER_DID_TICK = 'SCHEDULER_DID_TICK'
 const CONNECTION_LIFETIME_SET = 'CONNECTION_LIFETIME_SET'
 
 const initialState = fromJS({
-  maxConnectedPeers: 2,
+  maxConnectedPeers: {
+    rtc: 3,
+    net: 3,
+    onion: 3,
+    ws: 0,
+    wss: 0
+  },
   connectionLifetime: 30E3
-
 })
 
 module.exports = {
@@ -18,7 +23,7 @@ module.exports = {
   reducer: function (state = initialState, action) {
     switch (action.type) {
       case MAX_NUM_CONNECTIONS_SET:
-        return state.set('maxConnectedPeers', action.payload)
+        return state.mergeIn(['maxConnectedPeers'], action.payload)
       default:
         return state
     }
@@ -27,7 +32,10 @@ module.exports = {
     return state.scheduler
   },
   selectConnectionLifetime: createSelector('selectScheduler', function (scheduler) {
-    return scheduler.getIn('connectionLifetime')
+    return scheduler.get('connectionLifetime')
+  }),
+  selectMaxConnectedPeers: createSelector('selectScheduler', function (scheduler) {
+    return scheduler.get('maxConnectedPeers')
   }),
   doSetMaxNumConnections,
   doStartScheduler,

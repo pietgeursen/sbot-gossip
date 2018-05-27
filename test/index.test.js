@@ -18,29 +18,50 @@ test('throws if connectToPeer not passed in opts', function (t) {
 
 test('Set Max Peers', function (t) {
   var app = App({connectToPeer})
-  var expected = 3
-  app.doSetMaxNumConnections(expected)
+  var expected = 5
+  app.doSetMaxNumConnections({'rtc': expected})
 
-  var newState = app.getState()
-  t.equal(newState.scheduler.get('maxConnectedPeers'), expected, 'Peers max is set')
+  var newState = app.selectMaxConnectedPeers(app.getState())
+  t.equal(newState.get('rtc'), expected, 'Peers rtc max is set')
+  t.ok(newState.get('net'), 'Peers net max is unchanged by merge')
   t.end()
 })
 
-test('Adds peers', function (t) {
+test('Adds route to a peer', function (t) {
   var app = App({connectToPeer})
-  var peer = '123'
-  app.doAddPeer(peer)
-  var newState = app.getState()
-  t.ok(newState.peers.has(peer), 'Peer 1 is added')
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRouteToPeer(peer)
+  var routeAddress = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
 
-  // we just need to modify the state somehow so we can tell that it's different
-  app.doSetPeerLongtermConnection(peer, true)
-  newState = app.getState()
-  t.ok(newState.peers.getIn([peer, 'isLongterm']), 'Peer 1 is now long term')
+  t.ok(routeAddress, 'route was added')
 
-  app.doAddPeer(peer)
-  newState = app.getState()
-  t.ok(newState.peers.getIn([peer, 'isLongterm']), 'Peer 1 is not overwritten')
+  t.end()
+})
 
+test('on peer connection, the correct route isConnected', function (t) {
+  t.end()
+})
+
+test('selectConnectionCount', function (t) {
+  t.end()
+})
+
+test('remove route from peer', function (t) {
+  t.end()
+})
+
+test('set priority on a peer', function (t) {
+  t.end()
+})
+
+test('set peer isLongerm', function (t) {
+  t.end()
+})
+
+test('connect immedate calls connect function', function (t) {
   t.end()
 })

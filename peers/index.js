@@ -1,5 +1,5 @@
 'use strict'
-var {Record, fromJS} = require('immutable')
+var {Record, Map, fromJS} = require('immutable')
 var {createSelector} = require('redux-bundler')
 var {PRIORITY_MED} = require('../')
 
@@ -9,14 +9,13 @@ var CONNECTING = 'CONNECTING'
 var CONNECTED = 'DISCONNECTED'
 
 var routeRecord = Record({
-  address: '',
   isConnected: false,
-  isLocal: false // we can't tell a local connection from it's multiserver address. It will always be 'net'
+  isLocal: false // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
 })
 
 // peerRecords are keyed in `peers` by their pubKey.
 var PeerRecord = Record({
-  routes: [], // array of routeRecords
+  routes: Map({}), // array of routeRecords, keyed by multiserver address
 
   // Below here all needs to non-volatile
   priority: PRIORITY_MED,
@@ -32,10 +31,15 @@ module.exports = {
   name: 'peers',
   reducer: function (state = initialState, action) {
     switch (action.type) {
-      case PEER_ADDED: {
-        const peer = action.payload
-        return state.update(peer, function (peer) {
-          return peer || PeerRecord()
+      case PEER_ROUTE_ADDED: {
+        const {address} = action.payload
+        const pubKey = 0 // TODO: we need a helper to parse a pubKey id from a multiserver address. I think we could make `coerceAddress` an official module.
+        return state.update(pubKey, function (peer) {
+          // If we don't have a peerRecord we need to make one
+          const peerRecord = peer || PeerRecord()
+          peer.updateIn()
+
+          // now set
         })
       }
       case PEER_CONNECTION_LONGTERM_SET: {
@@ -50,7 +54,7 @@ module.exports = {
   doPeerDisconnect,
   doPeersDisconnect,
   doPeerDidDisconnect,
-  doAddPeer,
+  doAddRouteToPeer,
   doSetPeerPriority,
   doSetPeerLongtermConnection,
   doInboundPeerConnected,
@@ -82,7 +86,7 @@ function selectPeers (state) {
   return state.peers
 }
 
-const PEER_ADDED = 'PEER_ADDED'
+const PEER_ROUTE_ADDED = 'PEER_ROUTE_ADDED'
 const PEER_CONNECTED_TO_US = 'PEER_CONNECTION_CONNECTED_TO_US'
 const PEER_PRIORITY_SET = 'PEER_PRIORITY_SET' // Does this have immediate affect? Easier if not.
 const PEER_CONNECTION_LONGTERM_SET = 'PEER_CONNECTION_LONGTERM_SET'
@@ -93,10 +97,10 @@ const PEER_CONNECTION_ERROR = 'PEER_CONNECTION_ERROR'
 const PEER_CONNECTION_STARTED_CLOSING = 'PEER_CONNECTION_STARTED_CLOSING'
 const PEER_CONNECTION_CLOSED = 'PEER_CONNECTION_CLOSED'
 
-function doAddPeer (peer) {
+function doAddRouteToPeer (route) {
   return {
-    type: PEER_ADDED,
-    payload: peer
+    type: PEER_ROUTE_ADDED,
+    payload: route
   }
 }
 
