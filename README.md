@@ -13,7 +13,7 @@ It just keeps a list of peers and schedules connections to their scuttlebot.
 The goal is to provide more control over the manager with code that's easier to understand and extend.
 
 Features:
-- Set maximum number of peers to connect to by protocol.
+- Set maximum number of peers to connect to, specified by protocol type.
 - Start and stop all connections. 
 - Manager is 'off' by default, will only start trying to connect to peers when told to.
 - Supports prioritising peers by `HIGH`, `MEDIUM`, `LOW` and `BANNED`.
@@ -120,7 +120,7 @@ manager.connections.stop()
 manager.connections.setMaxByType(max)
 ```
 
-where `max` is an object of shape
+where `max` is an object of shape. Object will be merged with existing state so you only need to provide keys and values for ones you want to update.
 ```js
 {
   [multiserve protocol]: integer
@@ -135,6 +135,7 @@ defaults to:
   'net': 3,
   'onion': 3,
   'ws': 0,
+  'wss': 0,
 }
 ```
 
