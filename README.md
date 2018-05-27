@@ -1,6 +1,6 @@
 #sbot-connection-manager
 
-> improved "gossip" (connection) manager for scuttlebot
+> improved connection (gossip) manager for scuttlebot
 
 Module that manages making connections to other sbots (peers).
 This is a replacement for the scuttlebot gossip plugin that's built into scuttlebot.
@@ -23,12 +23,10 @@ Features:
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
 - Provides an observable of peers
 - Provides a hook for `onPrioritise` so other modules can change the prioritisation of peers.
+- Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally that's also advertising on multiple rtc introducers.
+
 
 This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
-
-Still to think about:
-
-How to manage multi protocols? How does rtc fit in here?
 
 ## Usage
 
@@ -44,7 +42,37 @@ var manager = Manager(opts)
 where `opts` is an object with keys:
 
 `connectToPeer`: (required) an async function that can be passed a multiserver address to begin an outbound connection to a peer. Will normally be the `sbot.connect` function.
-`disconnectFromPeer`: (required) an async function that can be passed a multiserver address to close a connection to a peer. Will normally be the `sbot.disconnect` function.
+
+### Add a new route to a peer
+
+```js
+manager.peer.addRoute(route)
+```
+
+Where a route has the shape:
+
+```js
+{
+  address: <multiserver address>,
+  isLocal: false
+}
+```
+
+### Remove a route to a peer
+
+If a peer discovery module knows that a peer is no longer available it can advise this module it's gone.
+
+```js
+manager.peer.addRoute(route)
+```
+
+Where a route has the shape:
+
+```js
+{
+  address: <multiserver address>,
+}
+```
 
 ### Initial sync
 
@@ -63,13 +91,6 @@ or
 manager.initialSync.stop()
 ```
 
-### Add peer
-
-```js
-manager.peer.add(peer)
-```
-Where `peers` is a string of multiserver address:
-
 ### Peers observable
 
 An observable of the peers the manager knows about.
@@ -81,9 +102,9 @@ manager.peers // tbd
 ### Prioritise peers
 
 ```js
-manager.peers.setPriority(peers)
+manager.peers.setPriority(peer)
 ```
-Where `peers` is an array of objects with shape:
+Where `peer` is an object with shape:
 ```js
 {
   address: multiserverAddress 
@@ -114,6 +135,7 @@ where `max` is an integer
 ### Set scheduler connection lifetime before disconnecting
 
 If a connection is not "long term" it will be disconnected after `time` ms.
+
 ```js
 manager.connections.setLifetime(timeMs)
 ```
