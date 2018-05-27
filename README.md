@@ -74,23 +74,6 @@ Where a route has the shape:
 }
 ```
 
-### Initial sync
-
-Starts or stops an initial sync with one (optionally provided) peer.
-When initial sync is happening we don't want to be trying to connecting to multiple peers.
-
-```js
-manager.initialSync.start([peer])
-```
-
-where `peer` is optional.
-
-or
-
-```js
-manager.initialSync.stop()
-```
-
 ### Peers observable
 
 An observable of the peers the manager knows about.
@@ -125,12 +108,29 @@ manager.connections.start()
 manager.connections.stop()
 ```
 
-### Set maximum number of connections 
+### Set maximum number of connections by type
 
 ```js
-manager.connections.setMax()
+manager.connections.setMaxByType(max)
 ```
-where `max` is an integer
+
+where `max` is an object of shape
+```js
+{
+  [multiserve protocol]: integer
+}
+```
+
+defaults to:
+
+```js
+{
+  'rtc': 3,
+  'net': 3,
+  'onion': 3,
+  'ws': 0,
+}
+```
 
 ### Set scheduler connection lifetime before disconnecting
 
@@ -139,6 +139,7 @@ If a connection is not "long term" it will be disconnected after `time` ms.
 ```js
 manager.connections.setLifetime(timeMs)
 ```
+
 ### Remote peer did connect
 
 ```js
@@ -159,6 +160,24 @@ A pull stream of errors received from trying to connect to peers. Will emit obje
 }
 ```
 where `peerId` is the public key of the peer that connected.
+
+### Initial sync
+
+Starts or stops an initial sync with one (optionally provided) peer.
+When initial sync is happening we don't want to be trying to connecting to multiple peers.
+
+```js
+manager.initialSync.start([peer])
+```
+
+where `peer` is optional.
+
+or
+
+```js
+manager.initialSync.stop()
+```
+
 
 
 ## Install
