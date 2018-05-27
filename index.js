@@ -1,8 +1,8 @@
 var {composeBundlesRaw, debugBundle, createReactorBundle, appTimeBundle} = require('redux-bundler')
 var Connector = require('./lib/connector')
 
-var peersBundle = require('./peers/bundle')
-var schedulerBundle = require('./scheduler/bundle')
+var peersBundle = require('./peers/')
+var schedulerBundle = require('./scheduler/')
 
 function App (opts) {
   if (!opts.connectToPeer) { throw new Error("opts.connectToPeer must be defined. Normally it's the sbot.connect function") }

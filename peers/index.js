@@ -1,18 +1,28 @@
 'use strict'
 var {Record, fromJS} = require('immutable')
-var {createSelector} = require('redux-bundler');
+var {createSelector} = require('redux-bundler')
 var {PRIORITY_MED} = require('../')
 
-//TODO: put somewhere else
+// TODO: put somewhere else
 var DISCONNECTED = 'DISCONNECTED'
 var CONNECTING = 'CONNECTING'
 var CONNECTED = 'DISCONNECTED'
 
+var routeRecord = Record({
+  address: '',
+  isConnected: false,
+  isLocal: false // we can't tell a local connection from it's multiserver address. It will always be 'net'
+})
+
+// peerRecords are keyed in `peers` by their pubKey.
 var PeerRecord = Record({
+  routes: [], // array of routeRecords
+
+  // Below here all needs to non-volatile
   priority: PRIORITY_MED,
-  connectionStatus: DISCONNECTED,
   lastConnection: null,
   isLongterm: false,
+  connectionCount: 0,
   errors: []
 })
 
@@ -38,21 +48,32 @@ module.exports = {
   },
   doPeerConnect,
   doPeerDisconnect,
+  doPeersDisconnect,
   doPeerDidDisconnect,
   doAddPeer,
   doSetPeerPriority,
   doSetPeerLongtermConnection,
   doInboundPeerConnected,
 
+  // TODO: should the peer selector give you the address as well? Selectors and action creators should have arg names updated to reflect if they're the peer address or the actual peer.
   selectPeers,
   selectConnectedPeers: createSelector('selectPeers', function (peers) {
-    peers.filter(function (peer) {
-      return peer.connectionStatus === CONNECTED
+    return peers.filter(function (peer) {
+      return peer.get('connectionStatus') === CONNECTED && peer.get('lastConnection')
     })
   }),
-  reactPeersThatShouldDisconnect: createSelector('selectConnectedPeers', 'selectAppTime', function (peers, appTime) {
-
-    
+  selectPeersThatShouldDisconnect: createSelector('selectConnectedPeers', 'selectAppTime', 'selectConnectionLifetime', function (peers, appTime, connectionLifetime) {
+    return peers.filter(function (peer) {
+      const timePassed = appTime - peer.get('lastConnection')
+      return timePassed > connectionLifetime
+    })
+  }),
+  reactPeersThatShouldDisconnect: createSelector('selectPeersThatShouldDisconnect', function (peers) {
+    // needs to return an action. but we're dealing with an action that should change mulitple peers.
+    // return {
+    //  actionCreator: 'doPeersDisconnect',
+    //  args: [peers]
+    // }
   })
 
 }
@@ -95,13 +116,12 @@ function doSetPeerLongtermConnection (peerAddress, isLongterm) {
     }
   }
 }
-
 // on connected we'll return a thunk that immediately dispatched connected with timeoutId as payload. Started closing will be dispatched eventually
 // OR we use the nice reactor pattern. We dispatch connection time timed out and then write a selector so we only dispatch disconnect if we are still connected
 function doPeerConnect (peer) {
   return function ({dispatch, connect}) {
     dispatch({ type: PEER_CONNECTION_STARTED, payload: peer })
-    connect(function (err) {
+    connect(peer, function (err) {
       if (err) {
         dispatch({type: PEER_CONNECTION_ERROR, payload: err})
         dispatch(doPeerDidDisconnect(peer))
@@ -114,13 +134,24 @@ function doPeerConnect (peer) {
 function doPeerDisconnect (peer) {
   return function ({dispatch, disconnect}) {
     dispatch({type: PEER_CONNECTION_STARTED_CLOSING, payload: peer})
-    disconnect(function (err) {
-      if (err) return console.log(err) // we tried to disconnect from an already disconnected peer. Log and forget.
+    disconnect(peer, function (err) {
+      if (err) console.log(err) // we tried to disconnect from an already disconnected peer. Log and forget.
       dispatch({type: PEER_CONNECTION_CLOSED, payload: peer})
     })
   }
 }
 
+function doPeersDisconnect (peers) {
+  return function ({dispatch, disconnect}) {
+    peers.forEach(function (peer) {
+      dispatch({type: PEER_CONNECTION_STARTED_CLOSING, payload: peer})
+      disconnect(peer, function (err) {
+        if (err) console.log(err) // we tried to disconnect from an already disconnected peer. Log and forget.
+        dispatch({type: PEER_CONNECTION_CLOSED, payload: peer})
+      })
+    })
+  }
+}
 // disconnected remotely
 function doPeerDidDisconnect (peer) {
   return {type: PEER_CONNECTION_CLOSED, payload: peer}

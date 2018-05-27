@@ -1,3 +1,4 @@
+var {createSelector} = require('redux-bundler')
 var {fromJS} = require('immutable')
 
 const MAX_NUM_CONNECTIONS_SET = 'MAX_NUM_CONNECTIONS_SET'
@@ -7,7 +8,9 @@ const SCHEDULER_DID_TICK = 'SCHEDULER_DID_TICK'
 const CONNECTION_LIFETIME_SET = 'CONNECTION_LIFETIME_SET'
 
 const initialState = fromJS({
-  maxConnectedPeers: 2
+  maxConnectedPeers: 2,
+  connectionLifetime: 30E3
+
 })
 
 module.exports = {
@@ -20,6 +23,12 @@ module.exports = {
         return state
     }
   },
+  selectScheduler: function (state) {
+    return state.scheduler
+  },
+  selectConnectionLifetime: createSelector('selectScheduler', function (scheduler) {
+    return scheduler.getIn('connectionLifetime')
+  }),
   doSetMaxNumConnections,
   doStartScheduler,
   doStopScheduler,
