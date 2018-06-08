@@ -2,13 +2,16 @@
 var {Record, Map, fromJS} = require('immutable')
 var {createSelector} = require('redux-bundler')
 var {PRIORITY_MED} = require('../')
+var { parseAddress, feedIdRegex: FeedIdRegex } = require('ssb-ref')
+
+var feedIdRegex = new RegExp(FeedIdRegex)
 
 // TODO: put somewhere else
 var DISCONNECTED = 'DISCONNECTED'
 var CONNECTING = 'CONNECTING'
 var CONNECTED = 'DISCONNECTED'
 
-var routeRecord = Record({
+var RouteRecord = Record({
   isConnected: false,
   isLocal: false // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
 })
@@ -16,6 +19,10 @@ var routeRecord = Record({
 // peerRecords are keyed in `peers` by their pubKey.
 var PeerRecord = Record({
   routes: Map({}), // array of routeRecords, keyed by multiserver address
+  // eg:
+  // {
+  // <multiserver-address>: <routeRecord>
+  // }
 
   // Below here all needs to non-volatile
   priority: PRIORITY_MED,
@@ -32,14 +39,19 @@ module.exports = {
   reducer: function (state = initialState, action) {
     switch (action.type) {
       case PEER_ROUTE_ADDED: {
-        const {address} = action.payload
-        const pubKey = 0 // TODO: we need a helper to parse a pubKey id from a multiserver address. I think we could make `coerceAddress` an official module.
-        return state.update(pubKey, function (peer) {
-          // If we don't have a peerRecord we need to make one
-          const peerRecord = peer || PeerRecord()
-          peer.updateIn()
+        const { address } = action.payload
+        var {key} = parseAddress(address)
+        key = key.match(feedIdRegex)[1]
 
-          // now set
+        return state.update(key, function (peer) {
+          // If we don't have a peerRecord we need to make one
+          if (!peer) {
+            peer = PeerRecord()
+            peer = peer.setIn(['routes', address], RouteRecord())
+          }
+
+          // peer.setIn(['routes', address], RouteRecord())
+          return peer
         })
       }
       case PEER_CONNECTION_LONGTERM_SET: {
