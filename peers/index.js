@@ -18,7 +18,7 @@ var RouteRecord = Record({
 
 // peerRecords are keyed in `peers` by their pubKey.
 var PeerRecord = Record({
-  routes: Map({}), // array of routeRecords, keyed by multiserver address
+  routes: Map({}), // map of routeRecords, keyed by multiserver address
   // eg:
   // {
   // <multiserver-address>: <routeRecord>
@@ -47,10 +47,13 @@ module.exports = {
           // If we don't have a peerRecord we need to make one
           if (!peer) {
             peer = PeerRecord()
+          }
+
+          // If the route to the peer doesn't exist the make a new route
+          if (!peer.getIn(['routes', address])) {
             peer = peer.setIn(['routes', address], RouteRecord())
           }
 
-          // peer.setIn(['routes', address], RouteRecord())
           return peer
         })
       }
