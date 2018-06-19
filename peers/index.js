@@ -49,7 +49,7 @@ module.exports = {
             peer = PeerRecord()
           }
 
-          // If the route to the peer doesn't exist the make a new route
+          // If the route to the peer doesn't exist then make a new route
           if (!peer.getIn(['routes', address])) {
             peer = peer.setIn(['routes', address], RouteRecord())
           }
