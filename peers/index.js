@@ -1,8 +1,9 @@
 'use strict'
 var {Record, Map, fromJS} = require('immutable')
 var {createSelector} = require('redux-bundler')
-var {PRIORITY_MED} = require('../')
 var { parseAddress, feedIdRegex: FeedIdRegex } = require('ssb-ref')
+
+var {PRIORITY_MED} = require('../types')
 
 var feedIdRegex = new RegExp(FeedIdRegex)
 

@@ -1,6 +1,5 @@
 var test = require('tape')
 var App = require('../')
-var {reducer, doAddRouteToPeer} = require('../peers/')
 
 function connectToPeer (address) {
 

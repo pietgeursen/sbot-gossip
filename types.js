@@ -1,0 +1,4 @@
+module.exports.PRIORITY_HIGH = 'PRIORITY_HIGH'
+module.exports.PRIORITY_MED = 'PRIORITY_MED'
+module.exports.PRIORITY_LOW = 'PRIORITY_LOW'
+module.exports.PRIORITY_BANNED = 'PRIORITY_BANNED'

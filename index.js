@@ -1,5 +1,6 @@
 var {composeBundlesRaw, debugBundle, createReactorBundle, appTimeBundle} = require('redux-bundler')
 var Connector = require('./lib/connector')
+var types = require('./types')
 
 var peersBundle = require('./peers/')
 var schedulerBundle = require('./scheduler/')
@@ -25,7 +26,4 @@ function App (opts) {
 }
 
 module.exports = App
-module.exports.PRIORITY_HIGH = 'PRIORITY_HIGH'
-module.exports.PRIORITY_MED = 'PRIORITY_MED'
-module.exports.PRIORITY_LOW = 'PRIORITY_LOW'
-module.exports.PRIORITY_BANNED = 'PRIORITY_BANNED'
+module.exports = Object.assign(App, types)
