@@ -51,13 +51,12 @@ test('trying to add an existing route', function (t) {
     address
   }
   app.doAddRouteToPeer(peer)
-  var routeAddress = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.ok(routeAddress, 'new route was added')
+  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+  t.ok(route, 'new route was added')
 
-  var peers = app.selectPeers(app.getState())
-
-  const newPeers = reducer(peers, doAddRouteToPeer(peer))
-  t.equal(newPeers, peers, 'peers are unchanged when route already exists')
+  app.doAddRouteToPeer(peer)
+  var newRoute = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+  t.equal(newRoute, route, 'peers are unchanged when route already exists')
 
   t.end()
 })
