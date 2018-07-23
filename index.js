@@ -25,5 +25,4 @@ function App (opts) {
   return createStore()
 }
 
-module.exports = App
 module.exports = Object.assign(App, types)
