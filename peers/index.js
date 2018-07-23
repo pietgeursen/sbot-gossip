@@ -8,28 +8,30 @@ var feedIdRegex = new RegExp(FeedIdRegex)
 
 // TODO: put somewhere else
 var DISCONNECTED = 'DISCONNECTED'
+var DISCONNECING = 'DISCONNECING'
 var CONNECTING = 'CONNECTING'
 var CONNECTED = 'DISCONNECTED'
 
 var RouteRecord = Record({
   isConnected: false,
-  isLocal: false // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
+  priority: PRIORITY_MED,
+
+  // Below here all needs to non-volatile
+  lastConnectionTime: null,
+  isLongterm: false,
+  isLocal: false, // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
+  errors: [],
+  connectionCount: 0
 })
 
 // peerRecords are keyed in `peers` by their pubKey.
 var PeerRecord = Record({
-  routes: Map({}), // map of routeRecords, keyed by multiserver address
+  routes: Map({}) // map of routeRecords, keyed by multiserver address
   // eg:
   // {
   // <multiserver-address>: <routeRecord>
   // }
 
-  // Below here all needs to non-volatile
-  priority: PRIORITY_MED,
-  lastConnection: null,
-  isLongterm: false,
-  connectionCount: 0,
-  errors: []
 })
 
 const initialState = fromJS({})
@@ -78,12 +80,12 @@ module.exports = {
   selectPeers,
   selectConnectedPeers: createSelector('selectPeers', function (peers) {
     return peers.filter(function (peer) {
-      return peer.get('connectionStatus') === CONNECTED && peer.get('lastConnection')
+      return peer.get('connectionStatus') === CONNECTED && peer.get('lastConnectionTime') // not sure why we need lastConnectionTime here.
     })
   }),
   selectPeersThatShouldDisconnect: createSelector('selectConnectedPeers', 'selectAppTime', 'selectConnectionLifetime', function (peers, appTime, connectionLifetime) {
     return peers.filter(function (peer) {
-      const timePassed = appTime - peer.get('lastConnection')
+      const timePassed = appTime - peer.get('lastConnectionTime')
       return timePassed > connectionLifetime
     })
   }),

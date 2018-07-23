@@ -52,22 +52,14 @@ test('trying to add an existing route', function (t) {
   }
   app.doAddRouteToPeer(peer)
   var routeAddress = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.ok(routeAddress, 'route was added')
+  t.ok(routeAddress, 'new route was added')
 
-  var newState = app.selectPeers(app.getState()).setIn([peerId, 'routes', address, 'isConnected'], true)
+  // we need to set the state of the route so this is a bit hacky
+  var peers = app.selectPeers(app.getState())
 
-  t.true(newState.getIn([peerId, 'routes', address, 'isConnected']), 'isConnected is set to true')
-  newState = reducer(newState, doAddRouteToPeer(peer))
-  t.true(newState.getIn([peerId, 'routes', address, 'isConnected']), 'isConnected is unchanged')
+  const newState = reducer(peers, doAddRouteToPeer(peer))
+  t.equal(newState, peers, 'isConnected is unchanged when route already exists')
 
-  t.end()
-})
-
-test('on peer connection, the correct route isConnected', function (t) {
-  t.end()
-})
-
-test('selectConnectionCount', function (t) {
   t.end()
 })
 
@@ -75,14 +67,32 @@ test('remove route from peer', function (t) {
   t.end()
 })
 
+test('on peer connection, the correct route isConnected', function (t) {
+  t.end()
+})
+
+test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
+  t.end()
+})
+
 test('set priority on a peer', function (t) {
   t.end()
 })
 
-test('set peer isLongerm', function (t) {
+test('set priority on a peer with invalid priority throws', function (t) {
   t.end()
 })
 
-test('connect immedate calls connect function', function (t) {
+test('set peer isLongterm', function (t) {
+  t.end()
+})
+
+// selectors
+test('selectConnectionCount', function (t) {
+  t.end()
+})
+
+// side effects
+test('connect immediate calls connect function', function (t) {
   t.end()
 })
