@@ -43,7 +43,7 @@ module.exports = {
     switch (action.type) {
       case PEER_ROUTE_ADDED: {
         const { address } = action.payload
-        var {key} = parseAddress(address)
+        let {key} = parseAddress(address)
         key = key.match(feedIdRegex)[1]
 
         return state.update(key, function (peer) {
@@ -59,6 +59,20 @@ module.exports = {
 
             return route
           })
+        })
+      }
+      case PEER_ROUTE_REMOVED: {
+        const { address } = action.payload
+        let {key} = parseAddress(address)
+        key = key.match(feedIdRegex)[1]
+
+        return state.update(key, function (peer) {
+          // If we don't have a peerRecord there's nothing to do here.
+          if (!peer) {
+            return peer
+          }
+
+          return peer.deleteIn(['routes', address])
         })
       }
       case PEER_CONNECTION_LONGTERM_SET: {
