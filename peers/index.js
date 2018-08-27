@@ -43,8 +43,7 @@ module.exports = {
     switch (action.type) {
       case PEER_ROUTE_ADDED: {
         const { address } = action.payload
-        let {key} = parseAddress(address)
-        key = key.match(feedIdRegex)[1]
+        const key = getKeyFromAddress(address)
 
         return state.update(key, function (peer) {
           // If we don't have a peerRecord we need to make one
@@ -63,22 +62,19 @@ module.exports = {
       }
       case PEER_ROUTE_REMOVED: {
         const { address } = action.payload
-        let {key} = parseAddress(address)
-        key = key.match(feedIdRegex)[1]
+        const key = getKeyFromAddress(address)
 
         return state.deleteIn([key, 'routes', address])
       }
       case PEER_CONNECTION_LONGTERM_SET: {
         const { address, isLongterm } = action.payload
-        let {key} = parseAddress(address)
-        key = key.match(feedIdRegex)[1]
+        const key = getKeyFromAddress(address)
 
         return state.setIn([key, 'routes', address, 'isLongterm'], isLongterm)
       }
       case PEER_PRIORITY_SET: {
         const { address, priority } = action.payload
-        let {key} = parseAddress(address)
-        key = key.match(feedIdRegex)[1]
+        const key = getKeyFromAddress(address)
 
         return state.setIn([key, 'routes', address, 'priority'], priority)
       }
@@ -214,4 +210,9 @@ function doInboundPeerConnected (peer) {
     type: PEER_CONNECTED_TO_US,
     payload: peer
   }
+}
+
+function getKeyFromAddress (address) {
+  var {key} = parseAddress(address)
+  return key.match(feedIdRegex)[1]
 }
