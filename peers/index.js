@@ -66,18 +66,21 @@ module.exports = {
         let {key} = parseAddress(address)
         key = key.match(feedIdRegex)[1]
 
-        return state.update(key, function (peer) {
-          // If we don't have a peerRecord there's nothing to do here.
-          if (!peer) {
-            return peer
-          }
-
-          return peer.deleteIn(['routes', address])
-        })
+        return state.deleteIn([key, 'routes', address])
       }
       case PEER_CONNECTION_LONGTERM_SET: {
-        const {address: peer, isLongterm} = action.payload
-        return state.setIn([peer, 'isLongterm'], isLongterm)
+        const { address, isLongterm } = action.payload
+        let {key} = parseAddress(address)
+        key = key.match(feedIdRegex)[1]
+
+        return state.setIn([key, 'routes', address, 'isLongterm'], isLongterm)
+      }
+      case PEER_PRIORITY_SET: {
+        const { address, priority } = action.payload
+        let {key} = parseAddress(address)
+        key = key.match(feedIdRegex)[1]
+
+        return state.setIn([key, 'routes', address, 'priority'], priority)
       }
       default:
         return state
@@ -146,21 +149,21 @@ function doRemoveRouteToPeer (route) {
   }
 }
 
-function doSetPeerPriority (peerAddress, priority) {
+function doSetPeerPriority ({address}, priority) {
   return {
     type: PEER_PRIORITY_SET,
     payload: {
-      address: peerAddress,
+      address,
       priority
     }
   }
 }
 
-function doSetPeerLongtermConnection (peerAddress, isLongterm) {
+function doSetPeerLongtermConnection ({address}, isLongterm) {
   return {
     type: PEER_CONNECTION_LONGTERM_SET,
     payload: {
-      address: peerAddress,
+      address,
       isLongterm
     }
   }
