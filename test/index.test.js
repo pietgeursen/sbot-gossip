@@ -1,5 +1,6 @@
 var test = require('tape')
 var App = require('../')
+var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
 
 function connectToPeer (address) {
 
@@ -61,6 +62,20 @@ test('trying to add an existing route', function (t) {
 })
 
 test('remove route from peer', function (t) {
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRouteToPeer(peer)
+  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+  t.ok(route, 'new route was added')
+
+  app.doRemoveRouteToPeer(peer)
+  var newRoute = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+  t.false(newRoute)
+
   t.end()
 })
 
@@ -73,6 +88,24 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
 })
 
 test('set priority on a peer', function (t) {
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRouteToPeer(peer)
+  app.doSetPeerPriority(peer, PRIORITY_MED)
+
+  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+
+  t.equal(route, PRIORITY_MED, 'route priority is set')
+
+  app.doSetPeerPriority(peer, PRIORITY_HIGH)
+
+  route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
+  t.equal(route, PRIORITY_HIGH, 'route priority is updated')
+
   t.end()
 })
 

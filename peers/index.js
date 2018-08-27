@@ -74,6 +74,7 @@ module.exports = {
   doPeersDisconnect,
   doPeerDidDisconnect,
   doAddRouteToPeer,
+  doRemoveRouteToPeer,
   doSetPeerPriority,
   doSetPeerLongtermConnection,
   doInboundPeerConnected,
@@ -106,6 +107,7 @@ function selectPeers (state) {
 }
 
 const PEER_ROUTE_ADDED = 'PEER_ROUTE_ADDED'
+const PEER_ROUTE_REMOVED = 'PEER_ROUTE_REMOVED'
 const PEER_CONNECTED_TO_US = 'PEER_CONNECTION_CONNECTED_TO_US'
 const PEER_PRIORITY_SET = 'PEER_PRIORITY_SET' // Does this have immediate affect? Easier if not.
 const PEER_CONNECTION_LONGTERM_SET = 'PEER_CONNECTION_LONGTERM_SET'
@@ -123,10 +125,20 @@ function doAddRouteToPeer (route) {
   }
 }
 
-function doSetPeerPriority (peerAddress) {
+function doRemoveRouteToPeer (route) {
+  return {
+    type: PEER_ROUTE_REMOVED,
+    payload: route
+  }
+}
+
+function doSetPeerPriority (peerAddress, priority) {
   return {
     type: PEER_PRIORITY_SET,
-    payload: peerAddress
+    payload: {
+      address: peerAddress,
+      priority
+    }
   }
 }
 
