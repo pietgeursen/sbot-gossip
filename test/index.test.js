@@ -3,7 +3,6 @@ var App = require('../')
 var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
 var {
   DISCONNECTED,
-  DISCONNECTING,
   CONNECTED,
   CONNECTING
 } = require('../routes/types')
@@ -187,15 +186,5 @@ test('set peer isLongterm', function (t) {
   isLongterm = app.selectRoutes(app.getState()).getIn([address, 'isLongterm'])
   t.equal(isLongterm, true, 'longterm is set')
 
-  t.end()
-})
-
-// selectors
-test('selectConnectionCount', function (t) {
-  t.end()
-})
-
-// side effects
-test('connect immediate calls connect function', function (t) {
   t.end()
 })

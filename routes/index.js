@@ -18,7 +18,7 @@ var RouteRecord = Record({
   connectionState: DISCONNECTED,
   priority: PRIORITY_MED,
 
-  // Below here all needs to non-volatile
+  // Below here all needs to be non-volatile
   lastConnectionTime: null,
   isLongterm: false,
   isLocal: false, // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
@@ -67,11 +67,12 @@ module.exports = {
       case CONNECTION_CONNECTED: {
         const { address } = action.payload
 
-        let tempState = state.setIn([address, 'connectionState'], CONNECTED)
-        tempState = tempState.updateIn([address, 'connectionCount'], function (count) {
-          return count + 1
-        })
-        return tempState.setIn([address, 'lastConnectionTime'], Date.now())
+        return state
+          .setIn([address, 'connectionState'], CONNECTED)
+          .setIn([address, 'lastConnectionTime'], Date.now())
+          .updateIn([address, 'connectionCount'], function (count) {
+            return count + 1
+          })
       }
       case CONNECTION_CLOSED: {
         const { address } = action.payload
