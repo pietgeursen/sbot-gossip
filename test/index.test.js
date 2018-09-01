@@ -1,5 +1,6 @@
 var test = require('tape')
-var App = require('../')
+var App = require('../').App
+
 var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
 var {
   DISCONNECTED,
@@ -105,6 +106,20 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
   t.end()
 })
 
+test('isLocal is set for a local route', function (t) {
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address,
+    isLocal: true
+  }
+  app.doAddRoute(peer)
+  var isLocal = app.selectRoutes(app.getState()).getIn([address, 'isLocal'])
+  t.ok(isLocal, 'route is local')
+  t.end()
+})
+
 test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
   t.plan(1)
   function connectToPeer ({address}, cb) {
@@ -142,7 +157,24 @@ test('on peer connection, the correct route has connection count incremented by 
   app.doRouteConnect(peer)
   t.end()
 })
-test('on peer connection error, the correct route has lastConnectionTime set to now', function (t) {
+
+test('on peer connection error, the errors array has the error added', function (t) {
+  t.plan(1)
+  var expectedErrorString = 'BANG'
+
+  function connectToPeer ({address}, cb) {
+    cb(new Error(expectedErrorString))
+    var errors = app.selectRoutes(app.getState()).getIn([address, 'errors'])
+    t.equal(errors.first(), expectedErrorString)
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
   t.end()
 })
 

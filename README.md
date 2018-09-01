@@ -91,7 +91,7 @@ TBD
 ### Prioritise peers
 
 ```js
-manager.peers.setPriority(peer)
+manager.peer.setPriority(peer)
 ```
 Where `peer` is an object with shape:
 ```js
@@ -150,7 +150,7 @@ manager.connections.setLifetime(timeMs)
 ### Remote peer did connect
 
 ```js
-manager.connections.remotePeerConnected(peerId)
+manager.peer.remotePeerConnected(peerId)
 ```
 
 ### Connection errors

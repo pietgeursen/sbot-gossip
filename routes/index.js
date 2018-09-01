@@ -1,5 +1,5 @@
 'use strict'
-var {Record, fromJS} = require('immutable')
+var {Record, fromJS, List} = require('immutable')
 var {createSelector} = require('redux-bundler')
 var { parseAddress, feedIdRegex: FeedIdRegex } = require('ssb-ref')
 
@@ -22,7 +22,7 @@ var RouteRecord = Record({
   lastConnectionTime: null,
   isLongterm: false,
   isLocal: false, // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
-  errors: [],
+  errors: List([]),
   connectionCount: 0
 })
 
@@ -33,12 +33,12 @@ module.exports = {
   reducer: function (state = initialState, action) {
     switch (action.type) {
       case ROUTE_ADDED: {
-        const { address } = action.payload
+        const { address, isLocal } = action.payload
         const key = getKeyFromAddress(address)
 
         return state.update(address, function (route) {
           if (!route) {
-            route = RouteRecord({id: address, peer: key})
+            route = RouteRecord({id: address, peer: key, isLocal})
           }
 
           return route
@@ -78,6 +78,13 @@ module.exports = {
         const { address } = action.payload
 
         return state.setIn([address, 'connectionState'], DISCONNECTED)
+      }
+      case CONNECTION_ERROR: {
+        const { address, error } = action.payload
+
+        return state.updateIn([address, 'errors'], function (errors) {
+          return errors.push(error)
+        })
       }
       case CONNECTION_STARTED_CLOSING: {
         const { address } = action.payload
@@ -137,11 +144,12 @@ const CONNECTION_ERROR = 'CONNECTION_ERROR'
 const CONNECTION_STARTED_CLOSING = 'CONNECTION_STARTED_CLOSING'
 const CONNECTION_CLOSED = 'CONNECTION_CLOSED'
 
-function doAddRoute ({address}) {
+function doAddRoute ({address, isLocal}) {
   return {
     type: ROUTE_ADDED,
     payload: {
-      address
+      address,
+      isLocal
     }
   }
 }
@@ -181,7 +189,7 @@ function doRouteConnect (peer) {
     dispatch({ type: CONNECTION_STARTED, payload: peer })
     connect(peer, function (err) {
       if (err) {
-        dispatch({type: CONNECTION_ERROR, payload: err})
+        dispatch({type: CONNECTION_ERROR, payload: {address: peer.address, error: err.message}})
         dispatch(doRouteDidDisconnect(peer))
       } else {
         dispatch({type: CONNECTION_CONNECTED, payload: peer})

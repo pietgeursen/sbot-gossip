@@ -26,4 +26,58 @@ function App (opts) {
   return createStore()
 }
 
-module.exports = Object.assign(App, types)
+// module.exports = Object.assign(App, types)
+
+module.exports = function Manager (opts) {
+  var app = App(opts)
+
+  // TODO: what obs lib?
+  // var peers = Obv()
+
+  return {
+    peer: {
+      addRoute: function (opts) {
+        app.doAddRoute(opts)
+      },
+      removeRoute: function (opts) {
+        app.doRemoveRoute(opts)
+      },
+      setPriority: function (opts) {
+        app.doSetRoutePriority(opts)
+      },
+      remotePeerConnected: function (opts) {
+        app.doInboundRouteConnected(opts)
+      }
+    },
+    connections: {
+      start: function () {
+
+      },
+      stop: function () {
+
+      },
+      setMaxByType: function (opts) {
+
+      },
+      setLifetime: function (ms) {
+
+      },
+      errors: function () {
+
+      }
+    },
+    initialSync: {
+      start: function () {
+
+      },
+      stop: function () {
+
+      }
+    },
+    types
+    // TODO:
+    // peers
+  }
+}
+
+module.exports.App = App
