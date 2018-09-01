@@ -1,6 +1,12 @@
 var test = require('tape')
 var App = require('../')
 var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
+var {
+  DISCONNECTED,
+  DISCONNECTING,
+  CONNECTED,
+  CONNECTING
+} = require('../routes/types')
 
 function connectToPeer (address) {
 
@@ -61,7 +67,42 @@ test('remove route from peer', function (t) {
   t.end()
 })
 
-test('on peer connection, the correct route isConnected', function (t) {
+test('connecting to a route immediately updates to CONNECTING and eventually CONNECTED on success', function (t) {
+  t.plan(2)
+  function connectToPeer ({address}, cb) {
+    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, CONNECTING)
+    cb(null)
+    connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, CONNECTED)
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
+})
+
+test('connecting to a route immediately dispatches CONNECTING and eventually DISCONNECTED on error', function (t) {
+  t.plan(2)
+  function connectToPeer ({address}, cb) {
+    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, CONNECTING)
+    cb(new Error('zzzzt'))
+    connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, DISCONNECTED)
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
   t.end()
 })
 
@@ -89,10 +130,6 @@ test('set priority on a route', function (t) {
 
   t.equal(priority, PRIORITY_HIGH, 'route priority is updated')
 
-  t.end()
-})
-
-test('set priority on a peer with invalid priority throws', function (t) {
   t.end()
 })
 
