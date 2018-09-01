@@ -107,6 +107,43 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
 })
 
 test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
+  t.plan(1)
+  function connectToPeer ({address}, cb) {
+    cb(null)
+    var lastConnectionTime = app.selectRoutes(app.getState()).getIn([address, 'lastConnectionTime'])
+    t.equal(lastConnectionTime / 100, Date.now() / 100) // division is just to allow for differences in times
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
+  t.end()
+})
+
+test('on peer connection, the correct route has connection count incremented by one', function (t) {
+  t.plan(2)
+  function connectToPeer ({address}, cb) {
+    var connectionCount = app.selectRoutes(app.getState()).getIn([address, 'connectionCount'])
+    t.equal(connectionCount, 0) // division is just to allow for differences in times
+    cb(null)
+    connectionCount = app.selectRoutes(app.getState()).getIn([address, 'connectionCount'])
+    t.equal(connectionCount, 1) // division is just to allow for differences in times
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
+  t.end()
+})
+test('on peer connection error, the correct route has lastConnectionTime set to now', function (t) {
   t.end()
 })
 

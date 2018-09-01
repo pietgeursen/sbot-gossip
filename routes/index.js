@@ -67,7 +67,11 @@ module.exports = {
       case CONNECTION_CONNECTED: {
         const { address } = action.payload
 
-        return state.setIn([address, 'connectionState'], CONNECTED)
+        let tempState = state.setIn([address, 'connectionState'], CONNECTED)
+        tempState = tempState.updateIn([address, 'connectionCount'], function (count) {
+          return count + 1
+        })
+        return tempState.setIn([address, 'lastConnectionTime'], Date.now())
       }
       case CONNECTION_CLOSED: {
         const { address } = action.payload
