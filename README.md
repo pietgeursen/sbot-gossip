@@ -185,6 +185,35 @@ or
 manager.initialSync.stop()
 ```
 
+## Internal Data Model
+
+The internal data model is a [normalized]() structure with `peers` and `routes` as entities.
+
+```js
+
+{
+  peers: {
+    <pubKey>: {
+      id: <pubKey>,
+      isBanned: false,
+      routes: []
+    } 
+  },
+  routes: {
+    <multiserver-address>: {
+      id: <multiserver-address>,
+      peer: <pubKey>,
+      priority: ... ,
+      isLocal: false,
+      errors: [],
+      connectionStatus: ...,
+      connectionCount: 0,
+      lastConnectionTime: null
+    }
+  }
+}
+```
+
 ## Install
 
 With [npm](https://npmjs.org/) installed, run

@@ -28,35 +28,17 @@ test('Set Max Peers', function (t) {
   t.end()
 })
 
-test('Adds new route to a peer', function (t) {
+test('Adds a peer', function (t) {
   var app = App({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
+  var peerAddress = {
     address
   }
-  app.doAddRouteToPeer(peer)
-  var routeAddress = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-
-  t.ok(routeAddress, 'route was added')
-
-  t.end()
-})
-
-test('trying to add an existing route', function (t) {
-  var app = App({connectToPeer})
-  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
-  }
-  app.doAddRouteToPeer(peer)
-  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.ok(route, 'new route was added')
-
-  app.doAddRouteToPeer(peer)
-  var newRoute = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.equal(newRoute, route, 'peers are unchanged when route already exists')
+  app.doAddPeer(peerAddress)
+  var peer = app.selectPeers(app.getState()).get(peerId)
+  t.ok(peer, 'peer was added')
+  t.equal(peer.id, peerId, 'peer has id set to the pub key')
 
   t.end()
 })
@@ -65,31 +47,16 @@ test('remove route from peer', function (t) {
   var app = App({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
+  var peerAddress = {
     address
   }
-  app.doAddRouteToPeer(peer)
-  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.ok(route, 'new route was added')
+  app.doAddPeer(peerAddress)
+  var peer = app.selectPeers(app.getState()).get(peerId)
+  t.ok(peer, 'new route was added')
 
-  app.doRemoveRouteToPeer(peer)
-  var newRoute = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.false(newRoute)
-
-  t.end()
-})
-
-test('remove route from peer is ok if that peer does not exist', function (t) {
-  var app = App({connectToPeer})
-  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
-  }
-
-  app.doRemoveRouteToPeer(peer)
-  var newRoute = app.selectPeers(app.getState()).getIn([peerId, 'routes', address])
-  t.false(newRoute)
+  app.doRemovePeer(peerAddress)
+  peer = app.selectPeers(app.getState()).get(peerId)
+  t.false(peer)
 
   t.end()
 })
@@ -102,24 +69,25 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
   t.end()
 })
 
-test('set priority on a peer', function (t) {
+test('set priority on a route', function (t) {
   var app = App({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
     address
   }
-  app.doAddRouteToPeer(peer)
-  app.doSetPeerPriority(peer, PRIORITY_MED)
+  app.doAddRoute(peer)
+  app.doSetRoutePriority(peer, PRIORITY_MED)
 
-  var route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address, 'priority'])
+  var priority = app.selectRoutes(app.getState()).getIn([address, 'priority'])
 
-  t.equal(route, PRIORITY_MED, 'route priority is set')
+  t.equal(priority, PRIORITY_MED, 'route priority is set')
 
-  app.doSetPeerPriority(peer, PRIORITY_HIGH)
+  app.doSetRoutePriority(peer, PRIORITY_HIGH)
 
-  route = app.selectPeers(app.getState()).getIn([peerId, 'routes', address, 'priority'])
-  t.equal(route, PRIORITY_HIGH, 'route priority is updated')
+  priority = app.selectRoutes(app.getState()).getIn([address, 'priority'])
+
+  t.equal(priority, PRIORITY_HIGH, 'route priority is updated')
 
   t.end()
 })
@@ -135,14 +103,14 @@ test('set peer isLongterm', function (t) {
   var peer = {
     address
   }
-  app.doAddRouteToPeer(peer)
+  app.doAddRoute(peer)
 
-  var isLongterm = app.selectPeers(app.getState()).getIn([peerId, 'routes', address, 'isLongterm'])
+  var isLongterm = app.selectRoutes(app.getState()).getIn([address, 'isLongterm'])
   t.equal(isLongterm, false, 'longterm is set')
 
-  app.doSetPeerLongtermConnection(peer, true)
+  app.doSetRouteLongtermConnection(peer, true)
 
-  isLongterm = app.selectPeers(app.getState()).getIn([peerId, 'routes', address, 'isLongterm'])
+  isLongterm = app.selectRoutes(app.getState()).getIn([address, 'isLongterm'])
   t.equal(isLongterm, true, 'longterm is set')
 
   t.end()

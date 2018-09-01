@@ -3,6 +3,7 @@ var Connector = require('./lib/connector')
 var types = require('./types')
 
 var peersBundle = require('./peers/')
+var routesBundle = require('./routes/')
 var schedulerBundle = require('./scheduler/')
 
 function App (opts) {
@@ -20,7 +21,7 @@ function App (opts) {
     }
   }
 
-  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), appTimeBundle, bundle, peersBundle, schedulerBundle)
+  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), appTimeBundle, bundle, peersBundle, schedulerBundle, routesBundle)
 
   return createStore()
 }
