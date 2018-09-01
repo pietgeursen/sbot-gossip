@@ -122,10 +122,11 @@ test('isLocal is set for a local route', function (t) {
 
 test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
   t.plan(1)
+  var expectedConnectionTime = 1234
   function connectToPeer ({address}, cb) {
     cb(null)
     var lastConnectionTime = app.selectRoutes(app.getState()).getIn([address, 'lastConnectionTime'])
-    t.equal(lastConnectionTime / 100, Date.now() / 100) // division is just to allow for differences in times
+    t.equal(lastConnectionTime, expectedConnectionTime) // division is just to allow for differences in times
   }
   var app = App({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
@@ -134,6 +135,7 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
     address
   }
   app.doAddRoute(peer)
+  app.doSchedulerTick(expectedConnectionTime)
   app.doRouteConnect(peer)
   t.end()
 })
@@ -219,4 +221,30 @@ test('set peer isLongterm', function (t) {
   t.equal(isLongterm, true, 'longterm is set')
 
   t.end()
+})
+
+test('routes that are connected longer than conneciton lifetime get disconnected', function (t) {
+  t.plan(2)
+  function connectToPeer ({address}, cb) {
+    cb(null)
+    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, CONNECTED)
+  }
+  var app = App({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+
+  app.doAddRoute(peer)
+  app.doRouteConnect(peer)
+  app.doSetConnectionLifetime(1000)
+
+  app.doSchedulerTick(2000)
+
+  setTimeout(function () {
+    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, DISCONNECTED)
+  }, 1)
 })

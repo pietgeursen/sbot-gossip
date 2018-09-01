@@ -15,15 +15,22 @@ const initialState = fromJS({
     ws: 0,
     wss: 0
   },
-  connectionLifetime: 30E3
+  connectionLifetime: 30E3,
+  appTime: 0
 })
 
 module.exports = {
   name: 'scheduler',
-  reducer: function (state = initialState, action) {
-    switch (action.type) {
+  reducer: function (state = initialState, {payload, type}) {
+    switch (type) {
       case MAX_NUM_CONNECTIONS_SET:
-        return state.mergeIn(['maxConnectedPeers'], action.payload)
+        return state.mergeIn(['maxConnectedPeers'], payload)
+      case CONNECTION_LIFETIME_SET:
+        return state.set('connectionLifetime', payload)
+      case SCHEDULER_DID_TICK:
+        return state.update('appTime', function (time) {
+          return time + payload
+        })
       default:
         return state
     }
@@ -31,6 +38,9 @@ module.exports = {
   selectScheduler: function (state) {
     return state.scheduler
   },
+  selectAppTime: createSelector('selectScheduler', function (scheduler) {
+    return scheduler.get('appTime')
+  }),
   selectConnectionLifetime: createSelector('selectScheduler', function (scheduler) {
     return scheduler.get('connectionLifetime')
   }),
@@ -55,9 +65,10 @@ function doSetMaxNumConnections (max) {
 
 function doStartScheduler () {
   return function ({dispatch}) {
+    var interval = 1000
     var intervalID = setInterval(function () {
-      dispatch(doSchedulerTick())
-    }, 1000)
+      dispatch(doSchedulerTick(interval))
+    }, interval)
     dispatch({type: SCHEDULER_DID_START, payload: intervalID})
   }
 }
@@ -74,9 +85,10 @@ function doStopScheduler () {
   }
 }
 
-function doSchedulerTick () {
+function doSchedulerTick (ms) {
   return {
-    type: SCHEDULER_DID_TICK
+    type: SCHEDULER_DID_TICK,
+    payload: ms
   }
 }
 

@@ -65,11 +65,11 @@ module.exports = {
         return state.setIn([address, 'connectionState'], CONNECTING)
       }
       case CONNECTION_CONNECTED: {
-        const { address } = action.payload
+        const { address, appTime } = action.payload
 
         return state
           .setIn([address, 'connectionState'], CONNECTED)
-          .setIn([address, 'lastConnectionTime'], Date.now())
+          .setIn([address, 'lastConnectionTime'], appTime)
           .updateIn([address, 'connectionCount'], function (count) {
             return count + 1
           })
@@ -105,25 +105,27 @@ module.exports = {
   doSetRouteLongtermConnection,
   doInboundRouteConnected,
 
-  // TODO: should the peer selector give you the address as well? Selectors and action creators should have arg names updated to reflect if they're the peer address or the actual peer.
   selectRoutes,
-  selectConnectedRoutes: createSelector('selectRoutes', function (peers) {
-    return peers.filter(function (peer) {
-      return peer.get('connectionStatus') === CONNECTED && peer.get('lastConnectionTime') // not sure why we need lastConnectionTime here.
+  selectConnectedRoutes: createSelector('selectRoutes', function (routes) {
+    return routes.filter(function (route) {
+      return route.get('connectionState') === CONNECTED
     })
   }),
-  selectRoutesThatShouldDisconnect: createSelector('selectConnectedRoutes', 'selectAppTime', 'selectConnectionLifetime', function (peers, appTime, connectionLifetime) {
-    return peers.filter(function (peer) {
-      const timePassed = appTime - peer.get('lastConnectionTime')
+  selectRoutesThatShouldDisconnect: createSelector('selectConnectedRoutes', 'selectAppTime', 'selectConnectionLifetime', function (routes, appTime, connectionLifetime) {
+    return routes.filter(function (route) {
+      const connectionTime = route.get('lastConnectionTime')
+      const routeConnectionTime = connectionTime === null ? 0 : connectionTime
+      const timePassed = appTime - routeConnectionTime
       return timePassed > connectionLifetime
     })
   }),
-  reactRoutesThatShouldDisconnect: createSelector('selectRoutesThatShouldDisconnect', function (peers) {
-    // needs to return an action. but we're dealing with an action that should change mulitple peers.
-    // return {
-    //  actionCreator: 'doRoutesDisconnect',
-    //  args: [peers]
-    // }
+  reactRoutesThatShouldDisconnect: createSelector('selectRoutesThatShouldDisconnect', function (routes) {
+    // needs to return an action. but we're dealing with an action that should change mulitple routes.
+    if (routes.isEmpty()) return
+    return {
+      actionCreator: 'doRoutesDisconnect',
+      args: [routes]
+    }
   })
 
 }
@@ -184,52 +186,50 @@ function doSetRouteLongtermConnection ({address}, isLongterm) {
 }
 // on connected we'll return a thunk that immediately dispatched connected with timeoutId as payload. Started closing will be dispatched eventually
 // OR we use the nice reactor pattern. We dispatch connection time timed out and then write a selector so we only dispatch disconnect if we are still connected
-function doRouteConnect (peer) {
-  return function ({dispatch, connect}) {
-    dispatch({ type: CONNECTION_STARTED, payload: peer })
-    connect(peer, function (err) {
+function doRouteConnect (route) {
+  return function ({dispatch, connect, getState, store}) {
+    var appTime = store.selectAppTime(getState())
+
+    dispatch({ type: CONNECTION_STARTED, payload: route })
+    connect(route, function (err) {
       if (err) {
-        dispatch({type: CONNECTION_ERROR, payload: {address: peer.address, error: err.message}})
-        dispatch(doRouteDidDisconnect(peer))
+        dispatch({type: CONNECTION_ERROR, payload: {address: route.address, error: err.message}})
+        dispatch(doRouteDidDisconnect(route))
       } else {
-        dispatch({type: CONNECTION_CONNECTED, payload: peer})
+        dispatch({type: CONNECTION_CONNECTED, payload: {address: route.address, appTime}})
       }
     })
   }
 }
 
 // we want to disconnect
-function doRouteDisconnect (peer) {
+function doRouteDisconnect (route) {
   return function ({dispatch, disconnect}) {
-    dispatch({type: CONNECTION_STARTED_CLOSING, payload: peer})
-    disconnect(peer, function (err) {
-      if (err) console.log(err) // we tried to disconnect from an already disconnected peer. Log and forget.
-      dispatch({type: CONNECTION_CLOSED, payload: peer})
+    dispatch({type: CONNECTION_STARTED_CLOSING, payload: route})
+    disconnect(route, function (err) {
+      if (err) console.log(err) // we tried to disconnect from an already disconnected route. Log and forget.
+      dispatch({type: CONNECTION_CLOSED, payload: route})
     })
   }
 }
 
-function doRoutesDisconnect (peers) {
+function doRoutesDisconnect (routes) {
   return function ({dispatch, disconnect}) {
-    peers.forEach(function (peer) {
-      dispatch({type: CONNECTION_STARTED_CLOSING, payload: peer})
-      disconnect(peer, function (err) {
-        if (err) console.log(err) // we tried to disconnect from an already disconnected peer. Log and forget.
-        dispatch({type: CONNECTION_CLOSED, payload: peer})
-      })
+    routes.forEach(function (_, route) {
+      dispatch(doRouteDisconnect({address: route}))
     })
   }
 }
 
 // disconnected remotely
-function doRouteDidDisconnect (peer) {
-  return {type: CONNECTION_CLOSED, payload: peer}
+function doRouteDidDisconnect (route) {
+  return {type: CONNECTION_CLOSED, payload: route}
 }
 
-function doInboundRouteConnected (peer) {
+function doInboundRouteConnected (route) {
   return {
     type: CONNECTED_TO_US,
-    payload: peer
+    payload: route
   }
 }
 
