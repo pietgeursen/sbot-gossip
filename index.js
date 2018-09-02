@@ -1,35 +1,8 @@
-var {composeBundlesRaw, debugBundle, createReactorBundle} = require('redux-bundler')
-var Connector = require('./lib/connector')
+var Store = require('./store')
 var types = require('./types')
 
-var peersBundle = require('./peers/')
-var routesBundle = require('./routes/')
-var schedulerBundle = require('./scheduler/')
-
-function App (opts) {
-  if (!opts.connectToPeer) { throw new Error("opts.connectToPeer must be defined. Normally it's the sbot.connect function") }
-
-  var {connect, disconnect} = Connector(opts.connectToPeer)
-
-  var bundle = {
-    name: 'sbot-connection-manager',
-    getExtraArgs: function () {
-      return {
-        connect,
-        disconnect
-      }
-    }
-  }
-
-  var createStore = composeBundlesRaw(debugBundle, createReactorBundle(), bundle, peersBundle, schedulerBundle, routesBundle)
-
-  return createStore()
-}
-
-// module.exports = Object.assign(App, types)
-
 module.exports = function Manager (opts) {
-  var app = App(opts)
+  var app = Store(opts)
 
   // TODO: what obs lib?
   // var peers = Obv()
@@ -79,5 +52,3 @@ module.exports = function Manager (opts) {
     // peers
   }
 }
-
-module.exports.App = App

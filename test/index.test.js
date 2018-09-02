@@ -1,5 +1,5 @@
 var test = require('tape')
-var App = require('../').App
+var Store = require('../store')
 
 var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
 var {
@@ -13,18 +13,18 @@ function connectToPeer (address) {
 }
 
 test('simple', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   t.ok(app, 'app is a thing')
   t.end()
 })
 
 test('throws if connectToPeer not passed in opts', function (t) {
-  t.throws(() => App({}), 'throws')
+  t.throws(() => Store({}), 'throws')
   t.end()
 })
 
 test('Set Max Peers', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var expected = 5
   app.doSetMaxNumConnections({'rtc': expected})
 
@@ -35,7 +35,7 @@ test('Set Max Peers', function (t) {
 })
 
 test('Adds a peer', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peerAddress = {
@@ -50,7 +50,7 @@ test('Adds a peer', function (t) {
 })
 
 test('remove route from peer', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peerAddress = {
@@ -76,7 +76,7 @@ test('connecting to a route immediately updates to CONNECTING and eventually CON
     connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, CONNECTED)
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -95,7 +95,7 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
     connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, DISCONNECTED)
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -107,7 +107,7 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
 })
 
 test('isLocal is set for a local route', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -128,7 +128,7 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
     var lastConnectionTime = app.selectRoutes(app.getState()).getIn([address, 'lastConnectionTime'])
     t.equal(lastConnectionTime, expectedConnectionTime) // division is just to allow for differences in times
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -149,7 +149,7 @@ test('on peer connection, the correct route has connection count incremented by 
     connectionCount = app.selectRoutes(app.getState()).getIn([address, 'connectionCount'])
     t.equal(connectionCount, 1) // division is just to allow for differences in times
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -169,7 +169,7 @@ test('on peer connection error, the errors array has the error added', function 
     var errors = app.selectRoutes(app.getState()).getIn([address, 'errors'])
     t.equal(errors.first(), expectedErrorString)
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -181,7 +181,7 @@ test('on peer connection error, the errors array has the error added', function 
 })
 
 test('set priority on a route', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -204,7 +204,7 @@ test('set priority on a route', function (t) {
 })
 
 test('set peer isLongterm', function (t) {
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
@@ -230,7 +230,7 @@ test('routes that are connected longer than conneciton lifetime get disconnected
     var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, CONNECTED)
   }
-  var app = App({connectToPeer})
+  var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
   var peer = {
