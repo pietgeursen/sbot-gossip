@@ -24,10 +24,10 @@ module.exports = function Manager (opts) {
     },
     connections: {
       start: function () {
-
+        app.doStartScheduler()
       },
       stop: function () {
-
+        app.doStopScheduler()
       },
       setMaxByType: function (opts) {
 

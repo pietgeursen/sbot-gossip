@@ -16,13 +16,16 @@ const initialState = fromJS({
     wss: 0
   },
   connectionLifetime: 30E3,
-  appTime: 0
+  appTime: 0,
+  tickIntervalId: null
 })
 
 module.exports = {
   name: 'scheduler',
   reducer: function (state = initialState, {payload, type}) {
     switch (type) {
+      case SCHEDULER_DID_START:
+        return state.set('tickIntervalId', payload)
       case MAX_NUM_CONNECTIONS_SET:
         return state.mergeIn(['maxConnectedPeers'], payload)
       case CONNECTION_LIFETIME_SET:
@@ -38,6 +41,9 @@ module.exports = {
   selectScheduler: function (state) {
     return state.scheduler
   },
+  selectTickIntervalId: createSelector('selectScheduler', function (scheduler) {
+    return scheduler.get('tickIntervalId')
+  }),
   selectAppTime: createSelector('selectScheduler', function (scheduler) {
     return scheduler.get('appTime')
   }),
@@ -61,8 +67,6 @@ function doSetMaxNumConnections (max) {
   }
 }
 
-// I think we want a thunk that dispatches DID_START straight away, intervalId as payload. Then ticks actions are dispatched from the interval
-
 function doStartScheduler () {
   return function ({dispatch}) {
     var interval = 1000
@@ -76,11 +80,13 @@ function doStartScheduler () {
 // Kills all existing timers. Kills all existing connections.
 // Sets all peers states to disconnected.
 function doStopScheduler () {
-  return function ({dispatch, doPeerDisconnect, selectSchedulerTimerID, selectPeerTimers, selectConnectedPeers}) {
-    clearInterval(selectSchedulerTimerID())
-    selectPeerTimers().forEach(clearInterval)
+  return function ({ dispatch, doPeerDisconnect, store, getState }) {
+    var schedulerTimerId = store.selectSchedulerTimerID(getState())
+    var connectedRoutes = store.selectConnectedRoutes(getState())
 
-    selectConnectedPeers().forEach(doPeerDisconnect)
+    clearInterval(schedulerTimerId)
+
+    connectedRoutes.forEach(doPeerDisconnect)
     dispatch({type: SCHEDULER_DID_STOP})
   }
 }
