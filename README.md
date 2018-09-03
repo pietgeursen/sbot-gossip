@@ -245,10 +245,12 @@ MIT
 
 ## TODO
 
-- tests on scheduler
+- [ ] tests on scheduler
+  - [x] test that the scheduler makes and breaks connections
+  - [ ] what else needs to be tested?
 - [x] decide who to connect to next
-  - list sorted by age of last connection time / last error time. 
-  - if connection fails, push to end of list
+  -[x] list sorted by age of last connection time / last error time. 
+  -[x] if connection errors, push to end of list
 - open a PR on scuttlebot
   - replace gossip plugin with connection manager
  

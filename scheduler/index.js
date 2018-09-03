@@ -57,7 +57,7 @@ module.exports = {
     return scheduler.get('isSchedulerRunning')
   }),
   selectNumberOfFreeConnectionSlots: createSelector('selectMaxConnectedPeers', 'selectDisconnectedRoutes', 'selectRoutes', function (maxConnectedPeers, disconnectedRoutes, routes) {
-    return maxConnectedPeers - (routes.size - disconnectedRoutes)
+    return maxConnectedPeers - (routes.size - disconnectedRoutes.size)
   }),
   reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
     if (isSchedulerRunning && numberOfFreeSlots > 0) {
@@ -81,9 +81,9 @@ function doSetMaxNumConnections (max) {
   }
 }
 
-function doStartScheduler () {
+function doStartScheduler (interval) {
   return function ({dispatch}) {
-    var interval = 1000
+    interval = interval || 1000
     var intervalID = setInterval(function () {
       dispatch(doSchedulerTick(interval))
     }, interval)
@@ -94,14 +94,20 @@ function doStartScheduler () {
 // Kills all existing timers. Kills all existing connections.
 // Sets all peers states to disconnected.
 function doStopScheduler () {
-  return function ({ dispatch, doPeerDisconnect, store, getState }) {
-    var schedulerTimerId = store.selectSchedulerTimerID(getState())
+  return function ({ dispatch, store, getState }) {
+    var schedulerTimerId = store.selectTickIntervalId(getState())
     var connectedRoutes = store.selectConnectedRoutes(getState())
 
     clearInterval(schedulerTimerId)
-
-    connectedRoutes.forEach(doPeerDisconnect)
     dispatch({type: SCHEDULER_DID_STOP})
+
+    var namedAction = {
+      actionCreator: 'doRoutesDisconnect',
+      args: [connectedRoutes]
+    }
+    setTimeout(function () {
+      dispatch(namedAction)
+    })
   }
 }
 

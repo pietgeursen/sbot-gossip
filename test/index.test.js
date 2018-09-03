@@ -248,6 +248,25 @@ test('routes that are connected longer than conneciton lifetime get disconnected
   }, 1)
 })
 
-test('selectNextRoutesToConnectTo', function (t) {
-  t.end()
+test('scheduler makes connections when started and disconnects when scheduler is stopped', function (t) {
+  t.plan(2)
+  function connectToPeer ({address}, cb) {
+    cb(null)
+    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    t.equal(connectionState, CONNECTED, 'scheduler made the connection on start')
+    app.doStopScheduler()
+
+    setTimeout(function () {
+      connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+      t.equal(connectionState, DISCONNECTED, 'scheduler closed the connection on stop')
+    }, 1)
+  }
+  var app = Store({connectToPeer})
+  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
+  var address = `rtc:hello.com:8091~shs:${peerId}`
+  var peer = {
+    address
+  }
+  app.doAddRoute(peer)
+  app.doStartScheduler(100)
 })
