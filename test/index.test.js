@@ -26,11 +26,10 @@ test('throws if connectToPeer not passed in opts', function (t) {
 test('Set Max Peers', function (t) {
   var app = Store({connectToPeer})
   var expected = 5
-  app.doSetMaxNumConnections({'rtc': expected})
+  app.doSetMaxNumConnections(expected)
 
   var newState = app.selectMaxConnectedPeers(app.getState())
-  t.equal(newState.get('rtc'), expected, 'Peers rtc max is set')
-  t.ok(newState.get('net'), 'Peers net max is unchanged by merge')
+  t.equal(newState, expected, 'Peers rtc max is set')
   t.end()
 })
 
@@ -247,4 +246,8 @@ test('routes that are connected longer than conneciton lifetime get disconnected
     var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, DISCONNECTED)
   }, 1)
+})
+
+test('selectNextRoutesToConnectTo', function (t) {
+  t.end()
 })

@@ -20,6 +20,7 @@ var RouteRecord = Record({
 
   // Below here all needs to be non-volatile
   lastConnectionTime: null,
+  lastErrorTime: null,
   isLongterm: false,
   isLocal: false, // we can't tell a local connection by looking at its multiserver address. It will always be 'net'
   errors: List([]),
@@ -80,11 +81,13 @@ module.exports = {
         return state.setIn([address, 'connectionState'], DISCONNECTED)
       }
       case CONNECTION_ERROR: {
-        const { address, error } = action.payload
+        const { address, error, appTime } = action.payload
 
-        return state.updateIn([address, 'errors'], function (errors) {
-          return errors.push(error)
-        })
+        return state
+          .updateIn([address, 'errors'], function (errors) {
+            return errors.push(error)
+          })
+          .setIn([address, 'lastErrorTime'], appTime)
       }
       case CONNECTION_STARTED_CLOSING: {
         const { address } = action.payload
@@ -98,6 +101,7 @@ module.exports = {
   doAddRoute,
   doRemoveRoute,
   doRouteConnect,
+  doRoutesConnect,
   doRouteDisconnect,
   doRoutesDisconnect,
   doRouteDidDisconnect,
@@ -110,6 +114,34 @@ module.exports = {
     return routes.filter(function (route) {
       return route.get('connectionState') === CONNECTED
     })
+  }),
+  selectDisconnectedRoutes: createSelector('selectRoutes', function (routes) {
+    return routes.filter(function (route) {
+      return route.get('connectionState') === DISCONNECTED
+    })
+  }),
+  selectDisconnectedRoutesWithoutRecentErrors: createSelector('selectDisconnectedRoutes', function (routes) {
+    return routes.filter(function (route) {
+      return route.get('lastConnectionTime') >= route.get('lastErrorTime')
+    })
+  }),
+  selectDisconnectedRoutesWithRecentErrors: createSelector('selectDisconnectedRoutes', function (routes) {
+    return routes.filter(function (route) {
+      return route.get('lastConnectionTime') < route.get('lastErrorTime')
+    })
+  }),
+  selectNextRoutesToConnectTo: createSelector('selectDisconnectedRoutesWithoutRecentErrors', 'selectDisconnectedRoutesWithRecentErrors', function (routesWithoutErrors, routesWithErrors) {
+    // This is _ok_ but could be better. For now as soon as it errors it goes to the back where it's unlikely to be tried again. Maybe that's ok.
+    var sortedWithoutErrors = routesWithoutErrors
+      .sortBy(function (route) {
+        route.get('lastConnectionTime')
+      })
+    var sortedWithErrors = routesWithErrors
+      .sortBy(function (route) {
+        route.get('lastErrorTime')
+      })
+
+    return sortedWithoutErrors.concat(sortedWithErrors)
   }),
   selectRoutesThatShouldDisconnect: createSelector('selectConnectedRoutes', 'selectAppTime', 'selectConnectionLifetime', function (routes, appTime, connectionLifetime) {
     return routes.filter(function (route) {
@@ -193,7 +225,7 @@ function doRouteConnect (route) {
     dispatch({ type: CONNECTION_STARTED, payload: route })
     connect(route, function (err) {
       if (err) {
-        dispatch({type: CONNECTION_ERROR, payload: {address: route.address, error: err.message}})
+        dispatch({type: CONNECTION_ERROR, payload: {address: route.address, error: err.message, appTime}})
         dispatch(doRouteDidDisconnect(route))
       } else {
         dispatch({type: CONNECTION_CONNECTED, payload: {address: route.address, appTime}})
@@ -221,6 +253,13 @@ function doRoutesDisconnect (routes) {
   }
 }
 
+function doRoutesConnect (routes) {
+  return function ({dispatch, disconnect}) {
+    routes.forEach(function (_, route) {
+      dispatch(doRouteConnect({address: route}))
+    })
+  }
+}
 // disconnected remotely
 function doRouteDidDisconnect (route) {
   return {type: CONNECTION_CLOSED, payload: route}

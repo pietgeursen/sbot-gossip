@@ -8,16 +8,11 @@ const SCHEDULER_DID_TICK = 'SCHEDULER_DID_TICK'
 const CONNECTION_LIFETIME_SET = 'CONNECTION_LIFETIME_SET'
 
 const initialState = fromJS({
-  maxConnectedPeers: {
-    rtc: 3,
-    net: 3,
-    onion: 3,
-    ws: 0,
-    wss: 0
-  },
+  maxConnectedPeers: 3,
   connectionLifetime: 30E3,
   appTime: 0,
-  tickIntervalId: null
+  tickIntervalId: null,
+  isSchedulerRunning: false
 })
 
 module.exports = {
@@ -25,9 +20,14 @@ module.exports = {
   reducer: function (state = initialState, {payload, type}) {
     switch (type) {
       case SCHEDULER_DID_START:
-        return state.set('tickIntervalId', payload)
+        return state
+          .set('tickIntervalId', payload)
+          .set('isSchedulerRunning', true)
+      case SCHEDULER_DID_STOP:
+        return state
+          .set('isSchedulerRunning', false)
       case MAX_NUM_CONNECTIONS_SET:
-        return state.mergeIn(['maxConnectedPeers'], payload)
+        return state.set('maxConnectedPeers', payload)
       case CONNECTION_LIFETIME_SET:
         return state.set('connectionLifetime', payload)
       case SCHEDULER_DID_TICK:
@@ -52,6 +52,20 @@ module.exports = {
   }),
   selectMaxConnectedPeers: createSelector('selectScheduler', function (scheduler) {
     return scheduler.get('maxConnectedPeers')
+  }),
+  selectIsSchedulerRunning: createSelector('selectScheduler', function (scheduler) {
+    return scheduler.get('isSchedulerRunning')
+  }),
+  selectNumberOfFreeConnectionSlots: createSelector('selectMaxConnectedPeers', 'selectDisconnectedRoutes', 'selectRoutes', function (maxConnectedPeers, disconnectedRoutes, routes) {
+    return maxConnectedPeers - (routes.size - disconnectedRoutes)
+  }),
+  reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
+    if (isSchedulerRunning && numberOfFreeSlots > 0) {
+      return {
+        actionCreator: 'doRoutesConnect',
+        args: [nextRoutesToConnectTo.take(numberOfFreeSlots)]
+      }
+    }
   }),
   doSetMaxNumConnections,
   doStartScheduler,

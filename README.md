@@ -16,6 +16,10 @@ Features:
 - Set maximum number of peers to connect to, specified by protocol type.
 - Start and stop all connections. 
 - Manager is 'off' by default, will only start trying to connect to peers when told to.
+- Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally but also discover it via multiple rtc introducers.
+---
+
+Later Features:
 - Supports prioritising peers by `HIGH`, `MEDIUM`, `LOW` and `BANNED`.
 - Supports initial sync mode. TBD what this actually does, for now just one peer connection, all scheduling of other connections is off.
 - Supports "long term connections" where a peer can be specified to remain connected as long as possible.
@@ -23,7 +27,7 @@ Features:
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
 - Provides an observable of peers
 - Provides a hook for `onPrioritise` so other modules can change the prioritisation of peers.
-- Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally but also discover it via multiple rtc introducers.
+
 
 
 This module uses redux as a data store. Hopefully redux is a commonly understood pattern that makes it easy for others to contribute.
@@ -238,4 +242,28 @@ Thanks to [mixmix](https://github.com/mixmix) for engaging with the readme and g
 ## License
 
 MIT
+
+## TODO
+
+- tests on scheduler
+- [x] decide who to connect to next
+  - list sorted by age of last connection time / last error time. 
+  - if connection fails, push to end of list
+- open a PR on scuttlebot
+  - replace gossip plugin with connection manager
+ 
+## TODO later
+- is the 'join' stuff set up ok and working. Think we need a selector and to make sure the join is created ok.
+- tests on peers
+
+
+## Open Questions
+
+- what isLocal? 
+  - is it about signifying this is high bandwidth / we can hammer this connection? 
+  - is it about being physically close to another human 
+- why do Peers exist as distinct from Routes 
+  - peer is mainly useful for blanket-banning any connections to a route 
+  - could have a priority list by connection type e.g. isLocal, bluetooth, onion, tcp 
+- how do we ban people from connecting to us? 
 
