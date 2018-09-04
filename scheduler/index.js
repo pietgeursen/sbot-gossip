@@ -59,17 +59,6 @@ module.exports = {
   selectNumberOfFreeConnectionSlots: createSelector('selectMaxConnectedPeers', 'selectDisconnectedRoutes', 'selectRoutes', function (maxConnectedPeers, disconnectedRoutes, routes) {
     return maxConnectedPeers - (routes.size - disconnectedRoutes.size)
   }),
-  reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
-    if (isSchedulerRunning && numberOfFreeSlots > 0) {
-      var addresses = nextRoutesToConnectTo.take(numberOfFreeSlots)
-      return {
-        actionCreator: 'doRoutesConnect',
-        args: [addresses.map(function (route) {
-          return route.id
-        })]
-      }
-    }
-  }),
   doSetMaxNumConnections,
   doStartScheduler,
   doStopScheduler,

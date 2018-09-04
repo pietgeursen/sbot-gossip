@@ -245,9 +245,14 @@ MIT
 
 ## TODO
 
-- [ ] expose peers array  
+- [o] check where I need to do multi dispatch from the reactors 
+- [ ] wire up network events the way the old scheduler did 
+- [ ] write tests over the selectors / sorting alogorithm 
+- [ ] write pull stream thing that updates the peers array based on the notify stream. Will need a function that maps my record to the data structure already used.
 - [ ] expose function to connect immediately 
 - [ ] tests on scheduler
+- [ ] limit to one connection per peer, even if we have multi routes to it.
+- [ ] in the gossip plugin. Just pass around ms addresses, not objects where possible. 
   - [x] test that the scheduler makes and breaks connections
   - [ ] what else needs to be tested?
 - [x] decide who to connect to next
@@ -259,6 +264,7 @@ MIT
 ## TODO later
 - is the 'join' stuff set up ok and working. Think we need a selector and to make sure the join is created ok.
 - tests on peers
+- handle inbound peer stuff
 
 
 ## Open Questions

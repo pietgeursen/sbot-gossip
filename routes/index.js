@@ -60,10 +60,16 @@ module.exports = {
 
         return state.setIn([multiserverAddress, 'priority'], priority)
       }
-      case CONNECTION_STARTED: {
-        const { multiserverAddress } = action.payload
+      case CONNECTION_STARTED_MULTI: {
+        const { multiserverAddresses } = action.payload
 
-        return state.setIn([multiserverAddress, 'connectionState'], CONNECTING)
+        const updatedRoutes = multiserverAddresses
+          .reduce(function (currentState, multiserverAddress) {
+            return currentState
+              .setIn([multiserverAddress, 'connectionState'], CONNECTING)
+          }, state)
+
+        return state.mergeDeep(updatedRoutes)
       }
       case CONNECTION_CONNECTED: {
         const { multiserverAddress, appTime } = action.payload
@@ -100,7 +106,6 @@ module.exports = {
   },
   doAddRoute,
   doRemoveRoute,
-  doRouteConnect,
   doRoutesConnect,
   doRouteDisconnect,
   doRoutesDisconnect,
@@ -169,8 +174,15 @@ module.exports = {
       actionCreator: 'doRoutesDisconnect',
       args: [addresses]
     }
+  }),
+  reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
+    if (isSchedulerRunning && numberOfFreeSlots > 0) {
+      var addresses = nextRoutesToConnectTo.take(numberOfFreeSlots)
+      return doRoutesConnect(addresses.map(function (route) {
+        return route.id
+      }))
+    }
   })
-
 }
 
 function selectRoutes (state) {
@@ -183,7 +195,7 @@ const CONNECTED_TO_US = 'CONNECTION_CONNECTED_TO_US'
 const PRIORITY_SET = 'PRIORITY_SET' // Does this have immediate affect? Easier if not.
 const CONNECTION_LONGTERM_SET = 'CONNECTION_LONGTERM_SET'
 // thunk here to dispatch this.
-const CONNECTION_STARTED = 'CONNECTION_STARTED'
+const CONNECTION_STARTED_MULTI = 'CONNECTION_STARTED_MULTI'
 const CONNECTION_CONNECTED = 'CONNECTION_CONNECTED'
 const CONNECTION_ERROR = 'CONNECTION_ERROR'
 const CONNECTION_STARTED_CLOSING = 'CONNECTION_STARTED_CLOSING'
@@ -234,7 +246,6 @@ function doRouteConnect ({multiserverAddress}) {
   return function ({dispatch, connect, getState, store, notifyChanges}) {
     var appTime = store.selectAppTime(getState())
 
-    dispatch({ type: CONNECTION_STARTED, payload: {multiserverAddress} })
     connect(multiserverAddress, function (err) {
       if (err) {
         dispatch({type: CONNECTION_ERROR, payload: {multiserverAddress, error: err.message, appTime}})
@@ -255,7 +266,7 @@ function doRouteDisconnect ({multiserverAddress}) {
     disconnect(multiserverAddress, function (err) {
       if (err) console.log(err) // we tried to disconnect from an already disconnected route. Log and forget.
       notifyChanges({type: 'disconnect'}, multiserverAddress)
-      dispatch({type: CONNECTION_CLOSED, payload: {multiserverAddress}})
+      dispatch(doRouteDidDisconnect({multiserverAddress}))
     })
   }
 }
@@ -270,6 +281,7 @@ function doRoutesDisconnect (multiserverAddresses) {
 
 function doRoutesConnect (multiserverAddresses) {
   return function ({dispatch, disconnect}) {
+    dispatch({ type: CONNECTION_STARTED_MULTI, payload: {multiserverAddresses} })
     multiserverAddresses.forEach(function (multiserverAddress) {
       dispatch(doRouteConnect({multiserverAddress}))
     })

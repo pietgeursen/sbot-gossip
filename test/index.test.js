@@ -79,7 +79,7 @@ test('connecting to a route immediately updates to CONNECTING and eventually CON
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
   app.doAddRoute({multiserverAddress})
-  app.doRouteConnect({multiserverAddress})
+  app.doRoutesConnect([multiserverAddress])
 })
 
 test('connecting to a route immediately dispatches CONNECTING and eventually DISCONNECTED on error', function (t) {
@@ -98,7 +98,7 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
     multiserverAddress
   }
   app.doAddRoute(payload)
-  app.doRouteConnect(payload)
+  app.doRoutesConnect([multiserverAddress])
   t.end()
 })
 
@@ -132,7 +132,7 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
   }
   app.doAddRoute(payload)
   app.doSchedulerTick(expectedConnectionTime)
-  app.doRouteConnect(payload)
+  app.doRoutesConnect([multiserverAddress])
   t.end()
 })
 
@@ -152,7 +152,7 @@ test('on peer connection, the correct route has connection count incremented by 
     multiserverAddress
   }
   app.doAddRoute(payload)
-  app.doRouteConnect(payload)
+  app.doRoutesConnect([multiserverAddress])
   t.end()
 })
 
@@ -172,7 +172,7 @@ test('on peer connection error, the errors array has the error added', function 
     multiserverAddress
   }
   app.doAddRoute(payload)
-  app.doRouteConnect(payload)
+  app.doRoutesConnect([multiserverAddress])
   t.end()
 })
 
@@ -234,7 +234,7 @@ test('routes that are connected longer than conneciton lifetime get disconnected
   }
 
   app.doAddRoute(payload)
-  app.doRouteConnect(payload)
+  app.doRoutesConnect([multiserverAddress])
   app.doSetConnectionLifetime(1000)
 
   app.doSchedulerTick(2000)
