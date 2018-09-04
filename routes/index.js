@@ -100,6 +100,17 @@ module.exports = {
 
         return state.setIn([multiserverAddress, 'connectionState'], DISCONNECTING)
       }
+      case CONNECTION_STARTED_CLOSING_MULTI: {
+        const { multiserverAddresses } = action.payload
+
+        const updatedRoutes = multiserverAddresses
+          .reduce(function (currentState, multiserverAddress) {
+            return currentState
+              .setIn([multiserverAddress, 'connectionState'], DISCONNECTING)
+          }, state)
+
+        return state.mergeDeep(updatedRoutes)
+      }
       default:
         return state
     }
@@ -170,17 +181,17 @@ module.exports = {
       return route.id
     })
     if (routes.isEmpty()) return
-    return {
-      actionCreator: 'doRoutesDisconnect',
-      args: [addresses]
-    }
+
+    return doRoutesDisconnect(addresses)
   }),
   reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
     if (isSchedulerRunning && numberOfFreeSlots > 0) {
-      var addresses = nextRoutesToConnectTo.take(numberOfFreeSlots)
-      return doRoutesConnect(addresses.map(function (route) {
-        return route.id
-      }))
+      var addresses = nextRoutesToConnectTo
+        .take(numberOfFreeSlots)
+        .map(function (route) {
+          return route.id
+        })
+      return doRoutesConnect(addresses)
     }
   })
 }
@@ -199,6 +210,7 @@ const CONNECTION_STARTED_MULTI = 'CONNECTION_STARTED_MULTI'
 const CONNECTION_CONNECTED = 'CONNECTION_CONNECTED'
 const CONNECTION_ERROR = 'CONNECTION_ERROR'
 const CONNECTION_STARTED_CLOSING = 'CONNECTION_STARTED_CLOSING'
+const CONNECTION_STARTED_CLOSING_MULTI = 'CONNECTION_STARTED_CLOSING_MULTI'
 const CONNECTION_CLOSED = 'CONNECTION_CLOSED'
 
 function doAddRoute ({multiserverAddress, isLocal, isLongterm}) {
@@ -262,7 +274,6 @@ function doRouteConnect ({multiserverAddress}) {
 // we want to disconnect
 function doRouteDisconnect ({multiserverAddress}) {
   return function ({dispatch, disconnect, notifyChanges}) {
-    dispatch({type: CONNECTION_STARTED_CLOSING, payload: {multiserverAddress}})
     disconnect(multiserverAddress, function (err) {
       if (err) console.log(err) // we tried to disconnect from an already disconnected route. Log and forget.
       notifyChanges({type: 'disconnect'}, multiserverAddress)
@@ -273,6 +284,7 @@ function doRouteDisconnect ({multiserverAddress}) {
 
 function doRoutesDisconnect (multiserverAddresses) {
   return function ({dispatch, disconnect}) {
+    dispatch({ type: CONNECTION_STARTED_CLOSING_MULTI, payload: {multiserverAddresses} })
     multiserverAddresses.forEach(function (multiserverAddress) {
       dispatch(doRouteDisconnect({multiserverAddress}))
     })
