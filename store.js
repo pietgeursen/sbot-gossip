@@ -9,13 +9,17 @@ module.exports = function Store (opts) {
   if (!opts.connectToPeer) { throw new Error("opts.connectToPeer must be defined. Normally it's the sbot.connect function") }
 
   var {connect, disconnect} = Connector(opts.connectToPeer)
+  var notifyChanges = opts.notifyChanges || function () {
+
+  }
 
   var bundle = {
     name: 'sbot-connection-manager',
     getExtraArgs: function () {
       return {
         connect,
-        disconnect
+        disconnect,
+        notifyChanges
       }
     }
   }

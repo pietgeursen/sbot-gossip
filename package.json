@@ -1,7 +1,7 @@
 {
-  "name": "sbot-gossip",
+  "name": "sbot-connection-manager",
   "version": "1.0.0",
-  "description": "improved gossip manager for sbot",
+  "description": "improved connection manager for sbot",
   "main": "index.js",
   "scripts": {
     "test": "tape \"test/**/*.test.js\" | tap-spec"
@@ -14,7 +14,6 @@
     "ssbc",
     "scuttlebutt",
     "scuttlebot",
-    "gossip",
     "scheduler",
     "manager",
     "connection"

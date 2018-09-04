@@ -48,7 +48,7 @@ test('Adds a peer', function (t) {
   t.end()
 })
 
-test('remove route from peer', function (t) {
+test('remove peer', function (t) {
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
   var address = `rtc:hello.com:8091~shs:${peerId}`
@@ -57,7 +57,7 @@ test('remove route from peer', function (t) {
   }
   app.doAddPeer(peerAddress)
   var peer = app.selectPeers(app.getState()).get(peerId)
-  t.ok(peer, 'new route was added')
+  t.ok(peer, 'new peer was added')
 
   app.doRemovePeer(peerAddress)
   peer = app.selectPeers(app.getState()).get(peerId)
@@ -68,7 +68,7 @@ test('remove route from peer', function (t) {
 
 test('connecting to a route immediately updates to CONNECTING and eventually CONNECTED on success', function (t) {
   t.plan(2)
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (address, cb) {
     var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, CONNECTING)
     cb(null)
@@ -77,17 +77,14 @@ test('connecting to a route immediately updates to CONNECTING and eventually CON
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
-  }
-  app.doAddRoute(peer)
-  app.doRouteConnect(peer)
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  app.doAddRoute({multiserverAddress})
+  app.doRouteConnect({multiserverAddress})
 })
 
 test('connecting to a route immediately dispatches CONNECTING and eventually DISCONNECTED on error', function (t) {
   t.plan(2)
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (address, cb) {
     var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
     t.equal(connectionState, CONNECTING)
     cb(new Error('zzzzt'))
@@ -96,25 +93,25 @@ test('connecting to a route immediately dispatches CONNECTING and eventually DIS
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
-  app.doRouteConnect(peer)
+  app.doAddRoute(payload)
+  app.doRouteConnect(payload)
   t.end()
 })
 
 test('isLocal is set for a local route', function (t) {
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address,
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress,
     isLocal: true
   }
-  app.doAddRoute(peer)
-  var isLocal = app.selectRoutes(app.getState()).getIn([address, 'isLocal'])
+  app.doAddRoute(payload)
+  var isLocal = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'isLocal'])
   t.ok(isLocal, 'route is local')
   t.end()
 })
@@ -122,40 +119,40 @@ test('isLocal is set for a local route', function (t) {
 test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
   t.plan(1)
   var expectedConnectionTime = 1234
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (multiserverAddress, cb) {
     cb(null)
-    var lastConnectionTime = app.selectRoutes(app.getState()).getIn([address, 'lastConnectionTime'])
+    var lastConnectionTime = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'lastConnectionTime'])
     t.equal(lastConnectionTime, expectedConnectionTime) // division is just to allow for differences in times
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
+  app.doAddRoute(payload)
   app.doSchedulerTick(expectedConnectionTime)
-  app.doRouteConnect(peer)
+  app.doRouteConnect(payload)
   t.end()
 })
 
 test('on peer connection, the correct route has connection count incremented by one', function (t) {
   t.plan(2)
-  function connectToPeer ({address}, cb) {
-    var connectionCount = app.selectRoutes(app.getState()).getIn([address, 'connectionCount'])
+  function connectToPeer (multiserverAddress, cb) {
+    var connectionCount = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionCount'])
     t.equal(connectionCount, 0) // division is just to allow for differences in times
     cb(null)
-    connectionCount = app.selectRoutes(app.getState()).getIn([address, 'connectionCount'])
+    connectionCount = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionCount'])
     t.equal(connectionCount, 1) // division is just to allow for differences in times
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
-  app.doRouteConnect(peer)
+  app.doAddRoute(payload)
+  app.doRouteConnect(payload)
   t.end()
 })
 
@@ -163,39 +160,39 @@ test('on peer connection error, the errors array has the error added', function 
   t.plan(1)
   var expectedErrorString = 'BANG'
 
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (multiserverAddress, cb) {
     cb(new Error(expectedErrorString))
-    var errors = app.selectRoutes(app.getState()).getIn([address, 'errors'])
+    var errors = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'errors'])
     t.equal(errors.first(), expectedErrorString)
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
-  app.doRouteConnect(peer)
+  app.doAddRoute(payload)
+  app.doRouteConnect(payload)
   t.end()
 })
 
 test('set priority on a route', function (t) {
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
-  app.doSetRoutePriority(peer, PRIORITY_MED)
+  app.doAddRoute(payload)
+  app.doSetRoutePriority(payload, PRIORITY_MED)
 
-  var priority = app.selectRoutes(app.getState()).getIn([address, 'priority'])
+  var priority = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'priority'])
 
   t.equal(priority, PRIORITY_MED, 'route priority is set')
 
-  app.doSetRoutePriority(peer, PRIORITY_HIGH)
+  app.doSetRoutePriority(payload, PRIORITY_HIGH)
 
-  priority = app.selectRoutes(app.getState()).getIn([address, 'priority'])
+  priority = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'priority'])
 
   t.equal(priority, PRIORITY_HIGH, 'route priority is updated')
 
@@ -205,18 +202,18 @@ test('set priority on a route', function (t) {
 test('set peer isLongterm', function (t) {
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
+  app.doAddRoute(payload)
 
-  var isLongterm = app.selectRoutes(app.getState()).getIn([address, 'isLongterm'])
+  var isLongterm = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'isLongterm'])
   t.equal(isLongterm, false, 'longterm is set')
 
-  app.doSetRouteLongtermConnection(peer, true)
+  app.doSetRouteLongtermConnection(payload, true)
 
-  isLongterm = app.selectRoutes(app.getState()).getIn([address, 'isLongterm'])
+  isLongterm = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'isLongterm'])
   t.equal(isLongterm, true, 'longterm is set')
 
   t.end()
@@ -224,49 +221,49 @@ test('set peer isLongterm', function (t) {
 
 test('routes that are connected longer than conneciton lifetime get disconnected', function (t) {
   t.plan(2)
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (multiserverAddress, cb) {
     cb(null)
-    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    var connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
     t.equal(connectionState, CONNECTED)
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
 
-  app.doAddRoute(peer)
-  app.doRouteConnect(peer)
+  app.doAddRoute(payload)
+  app.doRouteConnect(payload)
   app.doSetConnectionLifetime(1000)
 
   app.doSchedulerTick(2000)
 
   setTimeout(function () {
-    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    var connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
     t.equal(connectionState, DISCONNECTED)
   }, 1)
 })
 
 test('scheduler makes connections when started and disconnects when scheduler is stopped', function (t) {
   t.plan(2)
-  function connectToPeer ({address}, cb) {
+  function connectToPeer (multiserverAddress, cb) {
     cb(null)
-    var connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+    var connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
     t.equal(connectionState, CONNECTED, 'scheduler made the connection on start')
     app.doStopScheduler()
 
     setTimeout(function () {
-      connectionState = app.selectRoutes(app.getState()).getIn([address, 'connectionState'])
+      connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
       t.equal(connectionState, DISCONNECTED, 'scheduler closed the connection on stop')
     }, 1)
   }
   var app = Store({connectToPeer})
   var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var address = `rtc:hello.com:8091~shs:${peerId}`
-  var peer = {
-    address
+  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
+  var payload = {
+    multiserverAddress
   }
-  app.doAddRoute(peer)
+  app.doAddRoute(payload)
   app.doStartScheduler(100)
 })

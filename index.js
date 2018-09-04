@@ -13,6 +13,7 @@ module.exports = function Manager (opts) {
         app.doAddRoute(opts)
       },
       removeRoute: function (opts) {
+        app.doRouteDisconnect(opts)
         app.doRemoveRoute(opts)
       },
       setPriority: function (opts) {
@@ -31,6 +32,9 @@ module.exports = function Manager (opts) {
       },
       setMaxByType: function (opts) {
 
+      },
+      setMax: function (max) {
+        app.doSetMaxNumConnections(max)
       },
       setLifetime: function (ms) {
 

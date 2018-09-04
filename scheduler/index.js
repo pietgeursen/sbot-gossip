@@ -9,7 +9,7 @@ const CONNECTION_LIFETIME_SET = 'CONNECTION_LIFETIME_SET'
 
 const initialState = fromJS({
   maxConnectedPeers: 3,
-  connectionLifetime: 30E3,
+  connectionLifetime: 10E3,
   appTime: 0,
   tickIntervalId: null,
   isSchedulerRunning: false
@@ -61,9 +61,12 @@ module.exports = {
   }),
   reactRoutesThatShouldConnect: createSelector('selectIsSchedulerRunning', 'selectNumberOfFreeConnectionSlots', 'selectNextRoutesToConnectTo', function (isSchedulerRunning, numberOfFreeSlots, nextRoutesToConnectTo) {
     if (isSchedulerRunning && numberOfFreeSlots > 0) {
+      var addresses = nextRoutesToConnectTo.take(numberOfFreeSlots)
       return {
         actionCreator: 'doRoutesConnect',
-        args: [nextRoutesToConnectTo.take(numberOfFreeSlots)]
+        args: [addresses.map(function (route) {
+          return route.id
+        })]
       }
     }
   }),
@@ -103,7 +106,9 @@ function doStopScheduler () {
 
     var namedAction = {
       actionCreator: 'doRoutesDisconnect',
-      args: [connectedRoutes]
+      args: [connectedRoutes.map(function (route) {
+        return route.id
+      })]
     }
     setTimeout(function () {
       dispatch(namedAction)

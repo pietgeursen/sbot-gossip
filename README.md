@@ -245,6 +245,8 @@ MIT
 
 ## TODO
 
+- [ ] expose peers array  
+- [ ] expose function to connect immediately 
 - [ ] tests on scheduler
   - [x] test that the scheduler makes and breaks connections
   - [ ] what else needs to be tested?
@@ -269,3 +271,7 @@ MIT
   - could have a priority list by connection type e.g. isLocal, bluetooth, onion, tcp 
 - how do we ban people from connecting to us? 
 
+- Should this be a stand-alone sbot plugin or just straightup replace gossip
+  - If it's standalone gossip needs to be turned off and we need to find places in sbot or clients that reference it
+    
+  - For mvp I could just leave almost all of the gossip plugin alone and just insert connection manager as the scheduler.
