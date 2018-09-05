@@ -124,7 +124,6 @@ module.exports = {
   doAddRoute,
   doRemoveRoute,
   doRoutesConnect,
-  doRouteDisconnect,
   doRoutesDisconnect,
   doRouteDidDisconnect,
   doSetRoutePriority,
@@ -281,11 +280,9 @@ function doRouteConnect ({multiserverAddress}) {
 // we want to disconnect
 function doRouteDisconnect ({multiserverAddress}) {
   return function ({dispatch, disconnect, notifyChanges}) {
-    disconnect(multiserverAddress, function (err) {
-      if (err) console.log(err) // we tried to disconnect from an already disconnected route. Log and forget.
-      notifyChanges({type: 'disconnect'}, multiserverAddress)
-      dispatch(doRouteDidDisconnect({multiserverAddress}))
-    })
+    disconnect(multiserverAddress)
+    dispatch(doRouteDidDisconnect({multiserverAddress}))
+    notifyChanges({type: 'disconnect'}, multiserverAddress)
   }
 }
 
