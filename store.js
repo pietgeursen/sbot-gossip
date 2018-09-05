@@ -13,6 +13,11 @@ module.exports = function Store (opts) {
 
   }
 
+  // yuck hack for selector testing to set an intial state
+  if (opts && opts.routes && opts.routes.initialState) {
+    routesBundle.initialState = opts.routes.initialState
+  }
+
   var bundle = {
     name: 'sbot-connection-manager',
     getExtraArgs: function () {

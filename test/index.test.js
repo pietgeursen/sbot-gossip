@@ -1,5 +1,7 @@
 var test = require('tape')
 var Store = require('../store')
+var { RouteRecord } = require('../routes/')
+var {Map} = require('immutable')
 
 var {PRIORITY_MED, PRIORITY_HIGH} = require('../types')
 var {
@@ -267,3 +269,49 @@ test('scheduler makes connections when started and disconnects when scheduler is
   app.doAddRoute(payload)
   app.doStartScheduler(100)
 })
+
+test('selectDisconnectedRoutesWithoutRecentErrors', function (t) {
+  var address1 = createAddress(1)
+  var address2 = createAddress(2)
+  var address3 = createAddress(3)
+
+  var route1 = RouteRecord({
+    id: address1
+  })
+
+  var route2 = RouteRecord({
+    id: address2,
+    connectionState: CONNECTING
+  })
+
+  var route3 = RouteRecord({
+    id: address3,
+    lastErrorTime: 1
+  })
+
+  var state = Map({
+    [address1]: route1,
+    [address2]: route2,
+    [address3]: route3
+  })
+
+  var app = Store({connectToPeer, routes: {initialState: state}})
+  var result = app.selectDisconnectedRoutesWithoutRecentErrors(state)
+  t.true(result.get(address1))
+  t.false(result.get(address2))
+  t.false(result.get(address3))
+  t.end()
+})
+
+test('selectDisconnectedRoutesWithRecentErrors', function (t) {
+  t.end()
+})
+
+test('selectNextRoutesToConnectTo', function (t) {
+  t.end()
+})
+
+function createAddress (num) {
+  var peerId = `${num}TNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ=`
+  return `rtc:hello.com:8091~shs:${peerId}`
+}

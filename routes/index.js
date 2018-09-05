@@ -1,5 +1,5 @@
 'use strict'
-var {Record, fromJS, List} = require('immutable')
+var {Record, Map, List} = require('immutable')
 var {createSelector} = require('redux-bundler')
 var { parseAddress, feedIdRegex: FeedIdRegex } = require('ssb-ref')
 
@@ -27,11 +27,17 @@ var RouteRecord = Record({
   connectionCount: 0
 })
 
-const initialState = fromJS({})
+var initialState = Map({})
 
 module.exports = {
   name: 'routes',
-  reducer: function (state = initialState, action) {
+  getReducer: function () {
+    if (this.initialState) {
+      initialState = this.initialState
+    }
+    return this._reducer
+  },
+  _reducer: function (state = initialState, action) {
     switch (action.type) {
       case ROUTE_ADDED: {
         const { multiserverAddress, isLocal, isLongterm } = action.payload
@@ -193,7 +199,8 @@ module.exports = {
         })
       return doRoutesConnect(addresses)
     }
-  })
+  }),
+  RouteRecord
 }
 
 function selectRoutes (state) {
