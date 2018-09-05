@@ -245,12 +245,13 @@ MIT
 
 ## TODO
 
-- [o] check where I need to do multi dispatch from the reactors 
-- [ ] wire up network events the way the old scheduler did 
-- [ ] write tests over the selectors / sorting alogorithm 
+- [x] check where I need to do multi dispatch from the reactors 
+- [x] wire up network events the way the old scheduler did 
+- [x] write tests over the selectors / sorting alogorithm 
 - [ ] write pull stream thing that updates the peers array based on the notify stream. Will need a function that maps my record to the data structure already used.
-- [ ] expose function to connect immediately 
-- [ ] tests on scheduler
+- [x] allow for config setting that stops gossip on start up. 
+- [x] expose function to connect immediately 
+- [x] tests on scheduler
 - [ ] limit to one connection per peer, even if we have multi routes to it.
 - [ ] in the gossip plugin. Just pass around ms addresses, not objects where possible. 
   - [x] test that the scheduler makes and breaks connections
