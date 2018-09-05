@@ -221,29 +221,37 @@ test('set peer isLongterm', function (t) {
   t.end()
 })
 
-test('routes that are connected longer than conneciton lifetime get disconnected', function (t) {
-  t.plan(2)
+test('routes that are connected longer than conneciton lifetime get disconnected, unless there is only one connection', function (t) {
+  t.plan(4)
+
+  var address1 = createAddress(1)
+  var address2 = createAddress(2)
   function connectToPeer (multiserverAddress, cb) {
     cb(null)
     var connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
     t.equal(connectionState, CONNECTED)
   }
   var app = Store({connectToPeer})
-  var peerId = 'DTNmX+4SjsgZ7xyDh5xxmNtFqa6pWi5Qtw7cE8aR9TQ='
-  var multiserverAddress = `rtc:hello.com:8091~shs:${peerId}`
   var payload = {
-    multiserverAddress
+    multiserverAddress: address1
   }
 
   app.doAddRoute(payload)
-  app.doRoutesConnect([multiserverAddress])
+  app.doRoutesConnect([address1])
   app.doSetConnectionLifetime(1000)
 
   app.doSchedulerTick(2000)
 
   setTimeout(function () {
-    var connectionState = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'connectionState'])
-    t.equal(connectionState, DISCONNECTED)
+    var connectionState = app.selectRoutes(app.getState()).getIn([address1, 'connectionState'])
+    t.equal(connectionState, CONNECTED, 'stay connected with only 1 peer')
+    app.doAddRoute({multiserverAddress: address2})
+    app.doRoutesConnect([address2])
+    app.doSchedulerTick(2000)
+    setTimeout(function () {
+      var connectionState = app.selectRoutes(app.getState()).getIn([address1, 'connectionState'])
+      t.equal(connectionState, DISCONNECTED, 'the oldest one is disconnected')
+    }, 1)
   }, 1)
 })
 

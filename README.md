@@ -245,6 +245,7 @@ MIT
 
 ## TODO
 
+- [ ] test what happens when starting up with no network. I think it freaks out.
 - [ ] peers probably need source added to them so that they show up as local.
 - [x] check where I need to do multi dispatch from the reactors 
 - [x] wire up network events the way the old scheduler did 

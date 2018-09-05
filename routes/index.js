@@ -174,11 +174,17 @@ module.exports = {
       })
   }),
   selectRoutesThatShouldDisconnect: createSelector('selectConnectedRoutesNotLongterm', 'selectAppTime', 'selectConnectionLifetime', function (routes, appTime, connectionLifetime) {
-    return routes.filter(function (route) {
-      const connectionTime = route.get('lastConnectionTime')
-      const timePassed = appTime - connectionTime
-      return timePassed > connectionLifetime
-    })
+    return routes
+      .filter(function (route) {
+        const connectionTime = route.get('lastConnectionTime')
+        const timePassed = appTime - connectionTime
+        return timePassed > connectionLifetime
+      })
+      .sortBy(function (route) {
+        return route.get('lastConnectionTime')
+      })
+      .reverse()
+      .skip(1)
   }),
   reactRoutesThatShouldDisconnect: createSelector('selectRoutesThatShouldDisconnect', function (routes) {
     // needs to return an action. but we're dealing with an action that should change mulitple routes.
