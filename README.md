@@ -17,12 +17,12 @@ Features:
 - Start and stop all connections. 
 - Manager is 'off' by default, will only start trying to connect to peers when told to.
 - Supports multiple `routes` to a peer. There might be multiple ways to connect to a peer. Other modules in the stack are responsible for discovering routes to peers and then calling `addRouteToPeer(route)`. In this way we can support cases where we might discover a peer locally but also discover it via multiple rtc introducers.
+- Supports "long term connections" where a peer can be specified to remain connected as long as possible.
 ---
 
 Later Features:
 - Supports prioritising peers by `HIGH`, `MEDIUM`, `LOW` and `BANNED`.
 - Supports initial sync mode. TBD what this actually does, for now just one peer connection, all scheduling of other connections is off.
-- Supports "long term connections" where a peer can be specified to remain connected as long as possible.
 - Supports connecting immediately and permanently to a peer. Useful for debugging. 
 - Provides a stream of peers with errors. Useful for another module to decide which peers should be forgotten and which could be retried occasionally with low priority.
 - Provides an observable of peers
@@ -244,7 +244,10 @@ Thanks to [mixmix](https://github.com/mixmix) for engaging with the readme and g
 MIT
 
 ## TODO
-
+- [ ] push branch of ssb-ref
+- [-] make branch of app and get going.
+- [ ] limit only 1 connection per peer, even if muli routes exist
+- [x] sketch out what initial sync mode could be and test.
 - [ ] test what happens when starting up with no network. I think it freaks out.
 - [ ] peers probably need source added to them so that they show up as local.
 - [x] check where I need to do multi dispatch from the reactors 
@@ -267,9 +270,10 @@ MIT
  
 ## TODO later
 - is the 'join' stuff set up ok and working. Think we need a selector and to make sure the join is created ok.
-- tests on peers
 - handle inbound peer stuff
-
+- [ ] limit connections by protocol type
+  - [ ] should setMax change? I think this is just max by type, not blanket max.
+    - this has implications for prioritisation. To make it easier I think they need to specify an order of preference for connection type eg RTC. If not ordered, then selecting the right number of routes to connect to is complicated but doable.
 
 ## Open Questions
 

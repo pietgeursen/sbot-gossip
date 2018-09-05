@@ -45,10 +45,13 @@ module.exports = function Manager (opts) {
     },
     initialSync: {
       start: function () {
-
+        // setting max of one connection means the scheduler will search until it finds a connection and then remain connected permenently. Assuming the prioritising alogorithm doesn't change.
+        app.doSetMaxNumConnections(1)
+        app.doStartScheduler()
       },
       stop: function () {
-
+        // TODO: store current settings.
+        app.doSetMaxNumConnections(3)
       }
     },
     types
