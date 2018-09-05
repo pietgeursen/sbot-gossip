@@ -304,10 +304,90 @@ test('selectDisconnectedRoutesWithoutRecentErrors', function (t) {
 })
 
 test('selectDisconnectedRoutesWithRecentErrors', function (t) {
+  var address1 = createAddress(1)
+  var address2 = createAddress(2)
+  var address3 = createAddress(3)
+
+  var route1 = RouteRecord({
+    id: address1
+  })
+
+  var route2 = RouteRecord({
+    id: address2,
+    connectionState: CONNECTING
+  })
+
+  var route3 = RouteRecord({
+    id: address3,
+    lastErrorTime: 1
+  })
+
+  var state = Map({
+    [address1]: route1,
+    [address2]: route2,
+    [address3]: route3
+  })
+
+  var app = Store({connectToPeer, routes: {initialState: state}})
+  var result = app.selectDisconnectedRoutesWithRecentErrors(state)
+  t.false(result.get(address1))
+  t.false(result.get(address2))
+  t.true(result.get(address3))
   t.end()
 })
 
 test('selectNextRoutesToConnectTo', function (t) {
+  var address1 = createAddress(1)
+  var address2 = createAddress(2)
+  var address3 = createAddress(3)
+  var address4 = createAddress(4)
+  var address5 = createAddress(5)
+
+  // highest
+  var route1 = RouteRecord({
+    id: address1,
+    isLongterm: true,
+    lastErrorTime: 2
+  })
+
+  // prefer routes that we haven't connected to for the longest time
+  var route2 = RouteRecord({
+    id: address2
+  })
+
+  // prefer routes that we haven't connected to for the longest time. This one has the most recent connnection time
+  var route3 = RouteRecord({
+    id: address3,
+    lastConnectionTime: 3
+  })
+
+  // if they've had errors they should go to the back
+  var route4 = RouteRecord({
+    id: address4,
+    lastErrorTime: 1
+  })
+
+  // should be missing because is already connecting
+  var route5 = RouteRecord({
+    id: address2,
+    connectionState: CONNECTING
+  })
+
+  var state = Map({
+    [address1]: route1,
+    [address2]: route2,
+    [address3]: route3,
+    [address4]: route4,
+    [address5]: route5
+  })
+
+  var app = Store({connectToPeer, routes: {initialState: state}})
+  var orderedKeys = app.selectNextRoutesToConnectTo(state).keySeq()
+  t.equal(orderedKeys.get(0), address1)
+  t.equal(orderedKeys.get(1), address2)
+  t.equal(orderedKeys.get(2), address3)
+  t.equal(orderedKeys.get(3), address4)
+  t.false(orderedKeys.get(4))
   t.end()
 })
 
