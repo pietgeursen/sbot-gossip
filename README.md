@@ -244,12 +244,21 @@ Thanks to [mixmix](https://github.com/mixmix) for engaging with the readme and g
 MIT
 
 ## TODO
+- [ ] should this replace existing gossip or just be a seperate plugin?
+  - If it's a plugin in it's own right then can change / refine the api which would be good.
+  - A plugin would need to kill of old gossip plugin
+  - A plugin could manage it's own version of gossip.json / or similar
+
+- [ ] I _think_ times should be time integers. Easy to do and is good useful for persisting info.
+- [ ] handle updating gossip.json properly.
 - [ ] push branch of ssb-ref
+  - already pushed but regex I added is breaking change to the existing regex. But might be ok coz noone will have the old hash algorithm
 - [-] make branch of app and get going.
-- [ ] limit only 1 connection per peer, even if muli routes exist
-- [x] sketch out what initial sync mode could be and test.
-- [ ] test what happens when starting up with no network. I think it freaks out.
+- [x] sketch out what initial sync mode.
+- [x] test what happens when starting up with no network. I think it freaks out. -> Fixed!
 - [ ] peers probably need source added to them so that they show up as local.
+    - I think peers discovered from local should just be added with `isLongterm`. This module doesn't need to know about the local distinction hopefully. 
+    - This might have something to do with cryptix's work with scopes. Not quite sure yet.
 - [x] check where I need to do multi dispatch from the reactors 
 - [x] wire up network events the way the old scheduler did 
 - [x] write tests over the selectors / sorting alogorithm 
@@ -257,8 +266,6 @@ MIT
 - [x] allow for config setting that stops gossip on start up. 
 - [x] expose function to connect immediately 
 - [x] tests on scheduler
-- [ ] handle updating gossip.json properly.
-- [ ] limit to one connection per peer, even if we have multi routes to it.
 - [ ] in the gossip plugin. Just pass around ms addresses, not objects where possible. 
   - [x] test that the scheduler makes and breaks connections
   - [ ] what else needs to be tested?
@@ -269,8 +276,9 @@ MIT
   - replace gossip plugin with connection manager
  
 ## TODO later
-- is the 'join' stuff set up ok and working. Think we need a selector and to make sure the join is created ok.
-- handle inbound peer stuff
+- [ ] is the 'join' stuff set up ok and working. Think we need a selector and to make sure the join is created ok.
+- [ ] limit only 1 connection per peer, even if multi routes exist
+- [ ] handle inbound peer stuff
 - [ ] limit connections by protocol type
   - [ ] should setMax change? I think this is just max by type, not blanket max.
     - this has implications for prioritisation. To make it easier I think they need to specify an order of preference for connection type eg RTC. If not ordered, then selecting the right number of routes to connect to is complicated but doable.
