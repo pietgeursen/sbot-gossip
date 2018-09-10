@@ -10,7 +10,7 @@ const CONNECTION_LIFETIME_SET = 'CONNECTION_LIFETIME_SET'
 const initialState = fromJS({
   maxConnectedPeers: 3,
   connectionLifetime: 30E3,
-  appTime: 0,
+  appTime: Number(new Date()),
   tickIntervalId: null,
   isSchedulerRunning: false
 })

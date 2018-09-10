@@ -249,7 +249,7 @@ MIT
   - A plugin would need to kill of old gossip plugin
   - A plugin could manage it's own version of gossip.json / or similar
 
-- [ ] I _think_ times should be time integers. Easy to do and is good useful for persisting info.
+- [x] I _think_ times should be time integers. Easy to do and is useful for persisting info.
 - [ ] handle updating gossip.json properly.
 - [ ] push branch of ssb-ref
   - already pushed but regex I added is breaking change to the existing regex. But might be ok coz noone will have the old hash algorithm

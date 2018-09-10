@@ -120,10 +120,13 @@ test('isLocal is set for a local route', function (t) {
 
 test('on peer connection, the correct route has lastConnectionTime set to now', function (t) {
   t.plan(1)
-  var expectedConnectionTime = 1234
+  var tickAmount = 12345
   function connectToPeer (multiserverAddress, cb) {
     cb(null)
     var lastConnectionTime = app.selectRoutes(app.getState()).getIn([multiserverAddress, 'lastConnectionTime'])
+
+    var expectedConnectionTime = tickAmount + now
+
     t.equal(lastConnectionTime, expectedConnectionTime) // division is just to allow for differences in times
   }
   var app = Store({connectToPeer})
@@ -132,8 +135,9 @@ test('on peer connection, the correct route has lastConnectionTime set to now', 
   var payload = {
     multiserverAddress
   }
+  var now = app.selectAppTime(app.getState())
   app.doAddRoute(payload)
-  app.doSchedulerTick(expectedConnectionTime)
+  app.doSchedulerTick(tickAmount)
   app.doRoutesConnect([multiserverAddress])
   t.end()
 })
