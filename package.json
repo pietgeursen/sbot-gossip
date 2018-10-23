@@ -30,7 +30,7 @@
     "pull-notify": "^0.1.1",
     "pull-stream": "^3.6.8",
     "redux-bundler": "^21.2.1",
-    "ssb-ref": "^2.11.1"
+    "ssb-ref": "^2.13.0"
   },
   "devDependencies": {
     "tap-spec": "^4.1.1",
