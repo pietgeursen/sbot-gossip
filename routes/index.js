@@ -1,7 +1,7 @@
 'use strict'
 var {Record, Map, List} = require('immutable')
 var {createSelector} = require('redux-bundler')
-var { parseAddress, feedIdRegex: FeedIdRegex } = require('ssb-ref')
+var { parseAddress, feedIdRegex: FeedIdRegex, getKeyFromAddress } = require('ssb-ref')
 
 var {PRIORITY_MED} = require('../types')
 
@@ -321,9 +321,4 @@ function doInboundRouteConnected ({multiserverAddress}) {
   }
 }
 
-var feedIdRegex = new RegExp(FeedIdRegex)
 
-function getKeyFromAddress (address) {
-  var {key} = parseAddress(address)
-  return key.match(feedIdRegex)[1]
-}
